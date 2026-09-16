@@ -75,13 +75,30 @@ before the repo or app is ever made public or deployed anywhere:
       per-track lengths (55:38); the individual track lengths were
       independently confirmed against Apple Music and used as-is.
       Seed data: `sql/2017_reputation.sql`, `sql/2019_lover.sql`.
+- [x] Add *folklore* (2020, 16 tracks + 1 deluxe bonus, "the lakes")
+      and *evermore* (2020, 15 tracks + 2 deluxe bonus tracks). Neither
+      has a Taylor's Version. **Data-quality catch:** the initial bulk
+      Wikipedia fetch for evermore's tracklist had badly wrong lengths
+      for 5 of its 15 tracks (e.g. "Cowboy like Me" as 3:56 instead of
+      the real 4:35, "Closure" as 3:31 instead of 3:00) — caught only
+      because the sum of those lengths (58:05) was 2m33s short of the
+      album's stated 60:38 total, which is far too big a gap to be
+      rounding. Every track was then re-verified individually, and the
+      corrected lengths sum to 60:39 (1-second match). **Lesson: always
+      sum durations and diff against the album's stated total before
+      trusting a bulk-fetched tracklist — a small gap (a few seconds)
+      is a rounding/infobox quirk (seen on reputation and folklore
+      too), but a gap of tens of seconds or more means the data itself
+      is wrong and needs per-track re-verification.** Seed data:
+      `sql/2020_folklore.sql`, `sql/2020_evermore.sql`.
 
 ## Backlog / Ideas
 
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add more albums/eras, going in chronological order. Next up:
-      *folklore*, then *evermore*, *Midnights*, and beyond.
+      *Midnights* (and its "The Tortured Poets Department" era after
+      that).
 - [ ] Song comparison view (e.g. original vs Taylor's Version
       side-by-side: duration, songwriters, producers).
 - [ ] Basic styling/CSS pass on the HTML output.
