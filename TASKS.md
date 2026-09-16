@@ -122,15 +122,29 @@ before the repo or app is ever made public or deployed anywhere:
       Dessner-produced track on the album. Seed data:
       `sql/2024_the_tortured_poets_department.sql`.
 
-This completes the full catalog through TTPD (2024) — all 15 albums,
-every original/Taylor's Version pairing, and every officially released
-deluxe/platinum/vault/anthology edition, are now in the database.
+- [x] Add *The Life of a Showgirl* (2025), 12 tracks — Taylor's first
+      album made with a single, uniform production team throughout
+      (just Taylor, Max Martin, and Shellback; no other collaborators),
+      so writer/producer credits are identical across every track
+      except "Father Figure", which carries an added interpolation
+      credit for George Michael. Durations sum to exactly 41:40, an
+      exact match. Skipped the CD-exclusive variant editions' acoustic
+      re-recordings and voice-memo versions of existing songs (not new
+      songs, out of scope for now — same call as the Lavender/Japan
+      remix-only bonus content skipped on Fearless and Midnights).
+      Seed data: `sql/2025_the_life_of_a_showgirl.sql`.
+
+This completes the full catalog through *The Life of a Showgirl*
+(2025) — all 16 albums, every original/Taylor's Version pairing, and
+every officially released deluxe/platinum/vault/anthology edition, are
+now in the database.
 
 ## Backlog / Ideas
 
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
-- [ ] Add any albums released after TTPD (2024) if/when they exist.
+- [ ] Add any albums released after *The Life of a Showgirl* (2025) if
+      and when they exist.
 - [ ] Song comparison view (e.g. original vs Taylor's Version
       side-by-side: duration, songwriters, producers).
 - [ ] Basic styling/CSS pass on the HTML output.
