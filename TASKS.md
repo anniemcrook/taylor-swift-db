@@ -54,14 +54,26 @@ before the repo or app is ever made public or deployed anywhere:
       Durations verified against each album's official total runtime.
       Seed data: `sql/2010_speak_now.sql`,
       `sql/2023_speak_now_taylors_version.sql`.
+- [x] Add *Red* (2012 standard + Deluxe Edition, 22 tracks) and
+      *Red (Taylor's Version)* (2021, 30 tracks incl. 9 new From the
+      Vault songs plus the extended "All Too Well (10 Minute Version)",
+      which reuses the existing "All Too Well" song as a new
+      `recording` with `version_type = 'other'`). "State of Grace" now
+      has 4 distinct recordings (2012 original, 2012 deluxe acoustic,
+      2021 TV, 2021 TV acoustic) — the most-recorded song in the DB so
+      far. Ran a data-integrity check after Fearless (dup titles,
+      original/TV song_id matching, recording counts) and repeated the
+      same checks here; both passed cleanly. Durations verified against
+      each album's official total runtime. Seed data: `sql/2012_red.sql`,
+      `sql/2021_red_taylors_version.sql`.
 
 ## Backlog / Ideas
 
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add more albums/eras, going in chronological order. Next up:
-      *Red* / *Red (Taylor's Version)*, then *reputation*, *Lover*,
-      *folklore*, *evermore*, *Midnights*, and beyond.
+      *reputation*, then *Lover*, *folklore*, *evermore*, *Midnights*,
+      and beyond.
 - [ ] Song comparison view (e.g. original vs Taylor's Version
       side-by-side: duration, songwriters, producers).
 - [ ] Basic styling/CSS pass on the HTML output.
