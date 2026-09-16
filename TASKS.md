@@ -66,14 +66,22 @@ before the repo or app is ever made public or deployed anywhere:
       same checks here; both passed cleanly. Durations verified against
       each album's official total runtime. Seed data: `sql/2012_red.sql`,
       `sql/2021_red_taylors_version.sql`.
+- [x] Add *reputation* (2017, 15 tracks) and *Lover* (2019, 18 tracks)
+      — neither has a Taylor's Version yet, and neither had a bonus
+      edition that added new songs, so both are single, simple album
+      rows with no `edition` tags. Lover's duration matched its
+      official 61:48 total exactly. reputation's Wikipedia infobox
+      states 55:45, but that's off by 7 seconds from the sum of its own
+      per-track lengths (55:38); the individual track lengths were
+      independently confirmed against Apple Music and used as-is.
+      Seed data: `sql/2017_reputation.sql`, `sql/2019_lover.sql`.
 
 ## Backlog / Ideas
 
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add more albums/eras, going in chronological order. Next up:
-      *reputation*, then *Lover*, *folklore*, *evermore*, *Midnights*,
-      and beyond.
+      *folklore*, then *evermore*, *Midnights*, and beyond.
 - [ ] Song comparison view (e.g. original vs Taylor's Version
       side-by-side: duration, songwriters, producers).
 - [ ] Basic styling/CSS pass on the HTML output.
