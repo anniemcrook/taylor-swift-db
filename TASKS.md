@@ -45,15 +45,23 @@ before the repo or app is ever made public or deployed anywhere:
       row as the original via title lookup. Durations verified against
       each album's official total runtime. Seed data:
       `sql/2008_fearless.sql`, `sql/2021_fearless_taylors_version.sql`.
+- [x] Add *Speak Now* (2010 standard + Deluxe Edition, 20 tracks) and
+      *Speak Now (Taylor's Version)* (2023, 22 tracks incl. 6 From the
+      Vault tracks). The Deluxe Edition's acoustic ("Back to December",
+      "Haunted") and pop-mix ("Mine") bonus tracks are modeled as
+      additional `recordings` rows on the *same* song rather than new
+      songs — a good example of the schema's song/recording split.
+      Durations verified against each album's official total runtime.
+      Seed data: `sql/2010_speak_now.sql`,
+      `sql/2023_speak_now_taylors_version.sql`.
 
 ## Backlog / Ideas
 
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add more albums/eras, going in chronological order. Next up:
-      *Speak Now* / *Speak Now (Taylor's Version)*, then *Red*,
-      *reputation*, *Lover*, *folklore*, *evermore*, *Midnights*,
-      and beyond.
+      *Red* / *Red (Taylor's Version)*, then *reputation*, *Lover*,
+      *folklore*, *evermore*, *Midnights*, and beyond.
 - [ ] Song comparison view (e.g. original vs Taylor's Version
       side-by-side: duration, songwriters, producers).
 - [ ] Basic styling/CSS pass on the HTML output.
