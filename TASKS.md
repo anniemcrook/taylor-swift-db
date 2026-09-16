@@ -107,12 +107,30 @@ before the repo or app is ever made public or deployed anywhere:
       likely a minor infobox error, same pattern as reputation).
       Seed data: `sql/2022_midnights.sql`.
 
+- [x] Add *The Tortured Poets Department* (2024) — standard edition
+      (16 tracks) plus the simultaneously-released "The Anthology"
+      bonus disc (+15, tagged edition='The Anthology'), 31 tracks
+      total. No Taylor's Version. The bulk Wikipedia tracklist fetch
+      failed outright this time (no usable table at all), so every
+      track was looked up individually from the start. Standard
+      edition sums to exactly 65:08, an exact match; the full 31-track
+      total sums to 122:21, matching Apple Music's independently-
+      confirmed "2 hours 2 minutes" for the complete Anthology edition.
+      A few Anthology tracks' sources didn't explicitly restate Taylor
+      as co-producer alongside Aaron Dessner — included her anyway
+      since that pattern holds without exception on every other
+      Dessner-produced track on the album. Seed data:
+      `sql/2024_the_tortured_poets_department.sql`.
+
+This completes the full catalog through TTPD (2024) — all 15 albums,
+every original/Taylor's Version pairing, and every officially released
+deluxe/platinum/vault/anthology edition, are now in the database.
+
 ## Backlog / Ideas
 
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
-- [ ] Add more albums/eras, going in chronological order. Next up:
-      *The Tortured Poets Department* (2024, incl. "The Anthology").
+- [ ] Add any albums released after TTPD (2024) if/when they exist.
 - [ ] Song comparison view (e.g. original vs Taylor's Version
       side-by-side: duration, songwriters, producers).
 - [ ] Basic styling/CSS pass on the HTML output.
