@@ -92,13 +92,27 @@ before the repo or app is ever made public or deployed anywhere:
       is wrong and needs per-track re-verification.** Seed data:
       `sql/2020_folklore.sql`, `sql/2020_evermore.sql`.
 
+- [x] Add *Midnights* (2022) covering every officially released
+      edition in one album row, tagged via `edition`: standard (13),
+      '3am Edition' (+7), 'Til Dawn Edition' (+3: a new song "Hits
+      Different", plus new extended/remix recordings of "Snow on the
+      Beach" and "Karma" on their existing songs), and 'Late Night
+      Edition' (+1: "You're Losing Me (From the Vault)") — 24 tracks
+      total. Skipped the Lavender/Japan CD-exclusive remix-only bonus
+      tracks (strings/piano remixes of existing songs) as out of scope
+      for now. Verified in tiers: standard sums to exactly 44:02,
+      standard+3am to exactly 69:20, and standard+3am+Til-Dawn-additions
+      to 80:25 against Apple Music's independently-confirmed "~1h20m"
+      (the initial bulk fetch's stated Til Dawn total of 81:26 was
+      likely a minor infobox error, same pattern as reputation).
+      Seed data: `sql/2022_midnights.sql`.
+
 ## Backlog / Ideas
 
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add more albums/eras, going in chronological order. Next up:
-      *Midnights* (and its "The Tortured Poets Department" era after
-      that).
+      *The Tortured Poets Department* (2024, incl. "The Anthology").
 - [ ] Song comparison view (e.g. original vs Taylor's Version
       side-by-side: duration, songwriters, producers).
 - [ ] Basic styling/CSS pass on the HTML output.
