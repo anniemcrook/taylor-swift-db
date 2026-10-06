@@ -66,56 +66,65 @@ if ($songId === 0) {
     ");
     $songsWithMultipleRecordings = $listStmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+$pageTitle = $songId !== 0 && isset($song)
+    ? $song['title'] . ' — Version Comparison'
+    : 'Compare Versions — Taylor Swift Catalogue';
+$currentNav = 'compare';
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Compare Versions — Taylor Swift Catalogue</title>
+<?php include __DIR__ . '/head.php'; ?>
 </head>
 <body>
     <?php include __DIR__ . '/nav.php'; ?>
-
+    <main id="main">
     <?php if ($songId === 0): ?>
         <h1>Compare Versions</h1>
-        <p>Pick a song that has more than one recording to compare them side by side.</p>
-        <ul>
+        <p class="muted">Pick a song that has more than one recording to compare them side by side.</p>
+        <ul class="plain-list">
             <?php foreach ($songsWithMultipleRecordings as $s): ?>
             <li>
                 <a href="compare.php?song_id=<?= (int) $s['song_id'] ?>">
                     <?= htmlspecialchars($s['title']) ?>
                 </a>
-                (<?= (int) $s['recording_count'] ?> recordings)
+                <span class="tag">(<?= (int) $s['recording_count'] ?> recordings)</span>
             </li>
             <?php endforeach; ?>
         </ul>
     <?php else: ?>
         <h1><?= htmlspecialchars($song['title']) ?> — Version Comparison</h1>
-        <table border="1" cellpadding="8">
-            <tr>
-                <th>Version</th>
-                <th>Album</th>
-                <th>Track #</th>
-                <th>Duration</th>
-                <th>Credits</th>
-            </tr>
-            <?php foreach ($recordings as $recording): ?>
-            <tr>
-                <td><?= htmlspecialchars($recording['version_type']) ?></td>
-                <td>
-                    <?php if ($recording['album_id']): ?>
-                    <a href="tracklist.php?album_id=<?= (int) $recording['album_id'] ?>">
-                        <?= htmlspecialchars($recording['album_title']) ?>
-                    </a>
-                    <?php else: ?>
-                    —
-                    <?php endif; ?>
-                </td>
-                <td><?= htmlspecialchars($recording['track_number'] ?? '—') ?></td>
-                <td><?= $recording['duration_seconds'] ? gmdate('i:s', $recording['duration_seconds']) : '—' ?></td>
-                <td><?= htmlspecialchars(implode(', ', $recording['credits'])) ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </table>
+        <div class="table-wrap">
+            <table>
+                <caption class="visually-hidden"><?= htmlspecialchars($song['title']) ?> version comparison</caption>
+                <tr>
+                    <th scope="col">Version</th>
+                    <th scope="col">Album</th>
+                    <th scope="col">Track #</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Credits</th>
+                </tr>
+                <?php foreach ($recordings as $recording): ?>
+                <tr>
+                    <td><?= htmlspecialchars($recording['version_type']) ?></td>
+                    <td>
+                        <?php if ($recording['album_id']): ?>
+                        <a href="tracklist.php?album_id=<?= (int) $recording['album_id'] ?>">
+                            <?= htmlspecialchars($recording['album_title']) ?>
+                        </a>
+                        <?php else: ?>
+                        —
+                        <?php endif; ?>
+                    </td>
+                    <td><?= htmlspecialchars($recording['track_number'] ?? '—') ?></td>
+                    <td><?= $recording['duration_seconds'] ? gmdate('i:s', $recording['duration_seconds']) : '—' ?></td>
+                    <td><?= htmlspecialchars(implode(', ', $recording['credits'])) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </table>
+        </div>
     <?php endif; ?>
+    </main>
 </body>
 </html>

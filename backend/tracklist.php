@@ -93,49 +93,59 @@ foreach ($tracks as &$track) {
 unset($track);
 
 $artwork = get_album_artwork($pdo, $albumId, $album['title']);
+
+$pageTitle = $album['title'] . ' — Tracklist';
+$currentNav = null;
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title><?= htmlspecialchars($album['title']) ?> — Tracklist</title>
+<?php include __DIR__ . '/head.php'; ?>
 </head>
 <body>
     <?php include __DIR__ . '/nav.php'; ?>
-    <h1><?= htmlspecialchars($album['title']) ?></h1>
-    <?php if ($artwork): ?>
-    <img src="<?= htmlspecialchars($artwork) ?>" width="300" height="300" alt="<?= htmlspecialchars($album['title']) ?> cover art">
-    <?php endif; ?>
-    <table border="1" cellpadding="8">
-        <tr>
-            <th>#</th>
-            <th>Title</th>
-            <th>Duration</th>
-            <th>Credits</th>
-            <th>Music Video</th>
-        </tr>
-        <?php foreach ($tracks as $track): ?>
-        <tr>
-            <td><?= htmlspecialchars($track['track_number']) ?></td>
-            <td>
-                <?= htmlspecialchars($track['title']) ?>
-                <?php if ($track['recording_count'] > 1): ?>
-                <a href="compare.php?song_id=<?= (int) $track['song_id'] ?>">(compare versions)</a>
-                <?php endif; ?>
-            </td>
-            <td><?= $track['duration_seconds'] ? gmdate('i:s', $track['duration_seconds']) : '—' ?></td>
-            <td><?= htmlspecialchars(implode(', ', $track['credits'])) ?></td>
-            <td>
-                <?php if ($track['music_video_url']): ?>
-                <a href="<?= htmlspecialchars($track['music_video_url']) ?>" target="_blank" rel="noopener">Watch</a>
-                <?php if ($track['video_note']): ?>
-                (<?= htmlspecialchars($track['video_note']) ?>)
-                <?php endif; ?>
-                <?php else: ?>
-                —
-                <?php endif; ?>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    </table>
+    <main id="main">
+        <h1><?= htmlspecialchars($album['title']) ?></h1>
+        <?php if ($artwork): ?>
+        <img class="album-cover" src="<?= htmlspecialchars($artwork) ?>" width="240" height="240" alt="<?= htmlspecialchars($album['title']) ?> cover art">
+        <?php endif; ?>
+        <div class="table-wrap">
+            <table>
+                <caption class="visually-hidden"><?= htmlspecialchars($album['title']) ?> tracklist</caption>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Credits</th>
+                    <th scope="col">Music Video</th>
+                </tr>
+                <?php foreach ($tracks as $track): ?>
+                <tr>
+                    <td><?= htmlspecialchars($track['track_number']) ?></td>
+                    <td>
+                        <?= htmlspecialchars($track['title']) ?>
+                        <?php if ($track['recording_count'] > 1): ?>
+                        <a href="compare.php?song_id=<?= (int) $track['song_id'] ?>">(compare versions)</a>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= $track['duration_seconds'] ? gmdate('i:s', $track['duration_seconds']) : '—' ?></td>
+                    <td><?= htmlspecialchars(implode(', ', $track['credits'])) ?></td>
+                    <td>
+                        <?php if ($track['music_video_url']): ?>
+                        <a href="<?= htmlspecialchars($track['music_video_url']) ?>" target="_blank" rel="noopener">
+                            Watch<span class="visually-hidden"> (opens in a new tab)</span>
+                        </a>
+                        <?php if ($track['video_note']): ?>
+                        <span class="muted">(<?= htmlspecialchars($track['video_note']) ?>)</span>
+                        <?php endif; ?>
+                        <?php else: ?>
+                        —
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </table>
+        </div>
+    </main>
 </body>
 </html>

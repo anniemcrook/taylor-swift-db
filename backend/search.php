@@ -69,46 +69,52 @@ if ($query !== '') {
         $results[] = $song;
     }
 }
+
+$pageTitle = 'Search — Taylor Swift Catalogue';
+$currentNav = 'search';
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Search — Taylor Swift Catalogue</title>
+<?php include __DIR__ . '/head.php'; ?>
 </head>
 <body>
     <?php include __DIR__ . '/nav.php'; ?>
-    <h1>Search</h1>
-    <form method="get" action="search.php">
-        <input type="text" name="q" value="<?= htmlspecialchars($query) ?>" placeholder="Song, songwriter, or producer...">
-        <button type="submit">Search</button>
-    </form>
+    <main id="main">
+        <h1>Search</h1>
+        <form class="search-form" method="get" action="search.php">
+            <label class="visually-hidden" for="q">Song, songwriter, or producer</label>
+            <input type="text" id="q" name="q" value="<?= htmlspecialchars($query) ?>" placeholder="Song, songwriter, or producer...">
+            <button type="submit">Search</button>
+        </form>
 
-    <?php if ($query !== ''): ?>
-        <p><?= count($results) ?> song(s) matching "<?= htmlspecialchars($query) ?>"</p>
+        <?php if ($query !== ''): ?>
+            <p class="muted"><?= count($results) ?> song(s) matching "<?= htmlspecialchars($query) ?>"</p>
 
-        <?php foreach ($results as $song): ?>
-        <div style="margin-bottom: 1.5em;">
-            <h3>
-                <?= htmlspecialchars($song['title']) ?>
-                <?php if ($song['recording_count'] > 1): ?>
-                <a href="compare.php?song_id=<?= (int) $song['song_id'] ?>">(compare versions)</a>
-                <?php endif; ?>
-            </h3>
-            <ul>
-                <?php foreach ($song['appearances'] as $appearance): ?>
-                <li>
-                    <a href="tracklist.php?album_id=<?= (int) $appearance['album_id'] ?>">
-                        <?= htmlspecialchars($appearance['album_title']) ?>
-                    </a>
-                    — track <?= htmlspecialchars($appearance['track_number']) ?>
-                    (<?= htmlspecialchars($appearance['version_type']) ?>,
-                    <?= $appearance['duration_seconds'] ? gmdate('i:s', $appearance['duration_seconds']) : '—' ?>)
-                    — <?= htmlspecialchars(implode(', ', $appearance['credits'])) ?>
-                </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-        <?php endforeach; ?>
-    <?php endif; ?>
+            <?php foreach ($results as $song): ?>
+            <div class="result-card">
+                <h3>
+                    <?= htmlspecialchars($song['title']) ?>
+                    <?php if ($song['recording_count'] > 1): ?>
+                    <a href="compare.php?song_id=<?= (int) $song['song_id'] ?>">(compare versions)</a>
+                    <?php endif; ?>
+                </h3>
+                <ul>
+                    <?php foreach ($song['appearances'] as $appearance): ?>
+                    <li>
+                        <a href="tracklist.php?album_id=<?= (int) $appearance['album_id'] ?>">
+                            <?= htmlspecialchars($appearance['album_title']) ?>
+                        </a>
+                        — track <?= htmlspecialchars($appearance['track_number']) ?>
+                        (<?= htmlspecialchars($appearance['version_type']) ?>,
+                        <?= $appearance['duration_seconds'] ? gmdate('i:s', $appearance['duration_seconds']) : '—' ?>)
+                        — <?= htmlspecialchars(implode(', ', $appearance['credits'])) ?>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </main>
 </body>
 </html>

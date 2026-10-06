@@ -12,27 +12,34 @@ try {
 
 $stmt = $pdo->query("SELECT album_id, title FROM albums ORDER BY release_date");
 $albums = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$pageTitle = 'Taylor Swift Catalogue';
+$currentNav = 'home';
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Taylor Swift Catalogue</title>
+<?php include __DIR__ . '/head.php'; ?>
 </head>
 <body>
     <?php include __DIR__ . '/nav.php'; ?>
-    <h1>Taylor Swift Catalogue</h1>
-    <ul>
-        <?php foreach ($albums as $album): ?>
-        <?php $artwork = get_album_artwork($pdo, (int) $album['album_id'], $album['title']); ?>
-        <li>
-            <a href="tracklist.php?album_id=<?= (int) $album['album_id'] ?>">
-                <?php if ($artwork): ?>
-                <img src="<?= htmlspecialchars($artwork) ?>" width="60" height="60" alt="">
-                <?php endif; ?>
-                <?= htmlspecialchars($album['title']) ?>
-            </a>
-        </li>
-        <?php endforeach; ?>
-    </ul>
+    <main id="main">
+        <h1>Albums</h1>
+        <ul class="album-grid">
+            <?php foreach ($albums as $album): ?>
+            <?php $artwork = get_album_artwork($pdo, (int) $album['album_id'], $album['title']); ?>
+            <li>
+                <a class="album-card" href="tracklist.php?album_id=<?= (int) $album['album_id'] ?>">
+                    <?php if ($artwork): ?>
+                    <img class="cover" src="<?= htmlspecialchars($artwork) ?>" width="150" height="150" alt="<?= htmlspecialchars($album['title']) ?> cover art">
+                    <?php else: ?>
+                    <span class="cover placeholder" aria-hidden="true">No artwork</span>
+                    <?php endif; ?>
+                    <span class="title"><?= htmlspecialchars($album['title']) ?></span>
+                </a>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+    </main>
 </body>
 </html>

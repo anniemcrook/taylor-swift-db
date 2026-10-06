@@ -294,6 +294,23 @@ now in the database.
       catalog (every track, credit, duration, edition tag, and music
       video URL, across all 16 albums) against production: exact
       match, zero differences.
+- [x] Styling pass — "clean, modern, easily accessible" per the user.
+      Added `backend/style.css` (a single hand-written stylesheet, no
+      framework): light/dark palette via `prefers-color-scheme` and
+      CSS custom properties, a card grid of album covers on the
+      homepage, a sticky-feeling header with a real `<nav>`, tables
+      wrapped for horizontal scroll on mobile, and visible
+      `:focus-visible` rings throughout. Added `backend/head.php`
+      (shared `<meta>`/title/stylesheet block) and reworked
+      `backend/nav.php` into a semantic `<header>`/`<nav>` that marks
+      the current page with `aria-current="page"`. Accessibility
+      specifics: a "skip to content" link, `<label>` on the search
+      input (visually hidden, still announced), descriptive `alt` text
+      on every album cover (was `alt=""` on the homepage before),
+      `<caption>` + `scope="col"` on both tables, and a visually-hidden
+      "(opens in a new tab)" hint on music video links. All 4 pages
+      verified live (HTTP 200, no PHP errors, correct markup/ARIA via
+      curl) after the change.
 
 ## Backlog / Ideas
 
@@ -302,5 +319,3 @@ now in the database.
       nothing) — user's idea, explicitly deferred to later.
 - [ ] Add any albums/bonus tracks released after *The Life of a
       Showgirl: The Encore* (Sept 2026) if and when they exist.
-- [ ] Basic styling/CSS pass on the HTML output (everything is still
-      unstyled browser-default HTML) — up next.
