@@ -199,16 +199,27 @@ now in the database.
       "Love Story official video" was a channel called "PopMusicMTV",
       not her channel, so this check matters. Only "Love Story" /
       "Love Story (Taylor's Version)" are populated so far as a
-      proof-of-concept; populating the rest of the catalog (likely
-      60-100+ videos across all 16 albums, each needing the same
-      oEmbed verification) is a large pending effort — see backlog.
+      proof-of-concept.
+- [x] Did the Fearless era as the agreed trial run: "Fearless",
+      "White Horse", "You Belong with Me", "Fifteen", "The Best Day",
+      and "Change" (all 6 originals), confirmed via oEmbed to really
+      be on `@TaylorSwift` after multiple search-result false positives
+      (e.g. a "White Horse" result from "countrymusicgirl16", a "You
+      Belong with Me" one from "LegacyNationMusic"). "The Best Day
+      (Taylor's Version)" got a genuine new official video (own URL,
+      no borrow note); every other Fearless-era re-recording only ever
+      got a lyric video (not counted), so those 5 correctly borrow and
+      label the original's video via the existing logic. Seed data
+      (idempotent `UPDATE`s, not a fresh migration):
+      `sql/music_videos_fearless.sql`. Full-catalog rollout to the
+      remaining 15 albums is still pending — see backlog.
 
 ## Backlog / Ideas
 
 - [ ] Populate `recordings.music_video_url` across the rest of the
-      catalog (only "Love Story"/"Love Story (Taylor's Version)" done
-      so far) — verify every URL via YouTube oEmbed's `author_url`
-      before use, same as above.
+      catalog (only the debut's "Love Story" pair and the Fearless era
+      done so far) — verify every URL via YouTube oEmbed's
+      `author_url` before use, same as above.
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add any albums/bonus tracks released after *The Life of a
