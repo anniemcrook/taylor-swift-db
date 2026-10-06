@@ -245,14 +245,62 @@ now in the database.
       continuing to roll out, so revisit `sql/music_videos_showgirl.sql`
       as more are released.
 
+- [x] Added `sql/schema.sql` — and in the process discovered and fixed
+      a real problem: the schema/seed chain didn't actually rebuild
+      from a clean checkout at all. Root cause: *1989* and *1989
+      (Taylor's Version)* were the original pre-existing data this
+      project started from, before the sql/ seed-file convention
+      existed — so no seed file for them ever existed, and every
+      later script's artist lookups (Taylor Swift, Max Martin,
+      Shellback, Nathan Chapman, and several others) silently
+      depended on that unscripted data already being there.
+      Fixed by:
+      - `sql/0000_core_artists.sql` — bootstraps the 4 artists no
+        script ever inserts (Taylor Swift, Max Martin, Shellback,
+        Nathan Chapman).
+      - `sql/2014_1989.sql` + `sql/2023_1989_taylors_version.sql` —
+        reconstruct the original 1989 data from the live database,
+        matching it exactly (confirmed by diffing a full rebuild
+        against production — see below), including pre-existing data
+        gaps like several Taylor's Version tracks having no producer
+        credit recorded at all.
+      - Renamed `sql/2020_folklore.sql` → `sql/2020_07_folklore.sql`
+        and `sql/2020_evermore.sql` → `sql/2020_12_evermore.sql` so
+        they sort in the order evermore's script actually needs
+        (it reuses Joe Alwyn/Justin Vernon/Aaron Dessner, all added
+        in folklore's script).
+      - Moved the "Aaron Dessner" and "Christopher Rowe" first-inserts
+        to the chronologically-correct files (`sql/2020_07_folklore.sql`
+        and `sql/2021_fearless_taylors_version.sql`) instead of files
+        that ran too late to satisfy earlier lookups.
+      - Fixed a duplicate "Sounwave" artist row — inserted fresh in
+        both `sql/2019_lover.sql` and `sql/2022_midnights.sql` — in
+        both the seed files and (since it had already happened) the
+        live database itself: merged the two rows, repointed the 8
+        credit rows that referenced the duplicate.
+      - Rewrote every `sql/music_videos_*.sql` file to key its
+        `UPDATE`s by `(song title, version_type)` lookup instead of a
+        hardcoded `recording_id` — the live database's IDs already
+        have unexplained historical gaps (e.g. `recordings` jumps from
+        37 to 120 between pre-existing and session-added data), so
+        hardcoded IDs were never going to survive a fresh rebuild.
+      - Caught two more pre-existing data gaps this surfaced (Clean
+        TV and You Are in Love TV both have no producer credit
+        recorded) and one feature-parity gap (1989 TV's 5 vault
+        tracks were never tagged `edition='From the Vault'`, unlike
+        every other album's vault tracks) — fixed live too.
+      Verified by dropping a scratch database, running `schema.sql` +
+      every seed file in filename order, and diffing the *entire*
+      catalog (every track, credit, duration, edition tag, and music
+      video URL, across all 16 albums) against production: exact
+      match, zero differences.
+
 ## Backlog / Ideas
 
 - [ ] Add official lyric videos as a fallback for songs that only
       have a lyric video and no full music video (currently they show
       nothing) — user's idea, explicitly deferred to later.
-- [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
-      from a clean checkout (currently only exists live in MySQL).
 - [ ] Add any albums/bonus tracks released after *The Life of a
       Showgirl: The Encore* (Sept 2026) if and when they exist.
 - [ ] Basic styling/CSS pass on the HTML output (everything is still
-      unstyled browser-default HTML).
+      unstyled browser-default HTML) — up next.

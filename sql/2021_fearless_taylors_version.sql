@@ -5,14 +5,21 @@
 -- single, plus six "From the Vault" songs never previously released).
 -- Credits/durations per Wikipedia, cross-checked against the album's
 -- official 106:20 total runtime.
+--
+-- This is the earliest-released Taylor's Version album, so it's the
+-- file responsible for creating Christopher Rowe (her re-recording
+-- producer) fresh in this catalog; every later Taylor's Version file
+-- just looks him up. Aaron Dessner, by contrast, already exists by
+-- this point — he was created in sql/2020_07_folklore.sql, which
+-- predates this album's April 2021 release.
 
 INSERT INTO albums (title, release_date, album_type)
 VALUES ('Fearless (Taylor''s Version)', '2021-04-09', 'taylors_version');
 SET @album_id := LAST_INSERT_ID();
 
 SET @taylor   := (SELECT artist_id FROM artists WHERE name = 'Taylor Swift' LIMIT 1);
-SET @rowe     := (SELECT artist_id FROM artists WHERE name = 'Christopher Rowe' LIMIT 1);
 SET @antonoff := (SELECT artist_id FROM artists WHERE name = 'Jack Antonoff' LIMIT 1);
+SET @dessner  := (SELECT artist_id FROM artists WHERE name = 'Aaron Dessner' LIMIT 1);
 SET @liz_rose := (SELECT artist_id FROM artists WHERE name = 'Liz Rose' LIMIT 1);
 SET @lindsey  := (SELECT artist_id FROM artists WHERE name = 'Hillary Lindsey' LIMIT 1);
 SET @caillat  := (SELECT artist_id FROM artists WHERE name = 'Colbie Caillat' LIMIT 1);
@@ -21,8 +28,8 @@ SET @tljames  := (SELECT artist_id FROM artists WHERE name = 'Tommy Lee James' L
 SET @cbarlowe := (SELECT artist_id FROM artists WHERE name = 'Cary Barlowe' LIMIT 1);
 SET @nbarlowe := (SELECT artist_id FROM artists WHERE name = 'Nathan Barlowe' LIMIT 1);
 
-INSERT INTO artists (name) VALUES ('Aaron Dessner');
-SET @dessner := LAST_INSERT_ID();
+INSERT INTO artists (name) VALUES ('Christopher Rowe');
+SET @rowe := LAST_INSERT_ID();
 INSERT INTO artists (name) VALUES ('Scooter Carusoe');
 SET @carusoe := LAST_INSERT_ID();
 INSERT INTO artists (name) VALUES ('Brad Warren');

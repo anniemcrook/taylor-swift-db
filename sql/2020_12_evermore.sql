@@ -1,7 +1,7 @@
 -- Seed data: evermore (2020 standard edition, 15 tracks) plus the
 -- deluxe edition's 2 bonus tracks. No Taylor's Version exists for this
--- album. Run after sql/2020_folklore.sql (reuses Joe Alwyn and Justin
--- Vernon, added there).
+-- album. Run after sql/2020_07_folklore.sql (reuses Aaron Dessner,
+-- Joe Alwyn, and Justin Vernon, all added there).
 --
 -- IMPORTANT DATA NOTE: the first bulk fetch of this album's Wikipedia
 -- track listing gave badly wrong lengths for several tracks (e.g.

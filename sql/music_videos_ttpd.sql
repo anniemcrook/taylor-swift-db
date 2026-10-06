@@ -6,6 +6,10 @@
 -- video either (thanK you aIMee, The Prophecy, Who's Afraid of Little
 -- Old Me? are lyric-video only). No Taylor's Version exists for this
 -- album.
+--
+-- Updates are keyed by (song title, version_type) rather than a
+-- hardcoded recording_id, so they work regardless of what IDs come
+-- out of a given rebuild.
 
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=q3zqJs7JUCQ' WHERE recording_id = 361; -- Fortnight (feat. Post Malone)
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=Sl6en1NPTYM' WHERE recording_id = 373; -- I Can Do It With a Broken Heart
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=q3zqJs7JUCQ' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'Fortnight'); -- Fortnight (feat. Post Malone)
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=Sl6en1NPTYM' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'I Can Do It With a Broken Heart'); -- I Can Do It With a Broken Heart

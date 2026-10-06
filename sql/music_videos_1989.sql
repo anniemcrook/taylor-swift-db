@@ -6,11 +6,15 @@
 -- vault single "Is It Over Now?"), so all TV recordings are left
 -- NULL — they'll correctly borrow/label the original's video where
 -- one exists, or show nothing for vault-only songs with no original.
+--
+-- Updates are keyed by (song title, version_type) rather than a
+-- hardcoded recording_id, so they work regardless of what IDs come
+-- out of a given rebuild.
 
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=nfWlot6h_JM' WHERE recording_id = 7;  -- Shake It Off
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=e-ORhEE9VVg' WHERE recording_id = 3;  -- Blank Space
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=-CmadmM5cOk' WHERE recording_id = 4;  -- Style
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=QcIy9NiNbmo' WHERE recording_id = 9;  -- Bad Blood
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=IdneKLhsWOQ' WHERE recording_id = 10; -- Wildest Dreams
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=JLf9q36UsBk' WHERE recording_id = 5;  -- Out of the Woods
-UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=wyK7YuwUWsU' WHERE recording_id = 17; -- New Romantics
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=nfWlot6h_JM' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'Shake It Off'); -- Shake It Off
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=e-ORhEE9VVg' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'Blank Space'); -- Blank Space
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=-CmadmM5cOk' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'Style'); -- Style
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=QcIy9NiNbmo' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'Bad Blood'); -- Bad Blood
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=IdneKLhsWOQ' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'Wildest Dreams'); -- Wildest Dreams
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=JLf9q36UsBk' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'Out of the Woods'); -- Out of the Woods
+UPDATE recordings SET music_video_url = 'https://www.youtube.com/watch?v=wyK7YuwUWsU' WHERE version_type = 'original' AND song_id = (SELECT song_id FROM songs WHERE title = 'New Romantics'); -- New Romantics

@@ -3,22 +3,28 @@
 -- exists for this album.
 -- Credits/durations per Wikipedia and individually cross-checked
 -- per-track (the album's own aggregate infobox tables proved
--- unreliable when fetched in bulk — see sql/2020_evermore.sql for a
--- much worse case of this on the same day). The verified per-track
+-- unreliable when fetched in bulk — see sql/2020_12_evermore.sql for
+-- a much worse case of this on the same day). The verified per-track
 -- lengths sum to 63:31 against Wikipedia's stated 63:29 (2-second
 -- rounding difference, treated as a minor infobox error as with
 -- reputation earlier).
 -- "William Bowery" (a pseudonym) is recorded here under Joe Alwyn's
 -- real name for clarity in this catalog.
+--
+-- Run BEFORE sql/2020_12_evermore.sql — this is folklore's real-world
+-- release month (July), and this file is Aaron Dessner's, Joe
+-- Alwyn's, and Justin Vernon's first-ever appearance in this catalog,
+-- so it's the file responsible for creating those three artists fresh.
 
 INSERT INTO albums (title, release_date, album_type)
 VALUES ('folklore', '2020-07-24', 'studio');
 SET @album_id := LAST_INSERT_ID();
 
 SET @taylor   := (SELECT artist_id FROM artists WHERE name = 'Taylor Swift' LIMIT 1);
-SET @dessner  := (SELECT artist_id FROM artists WHERE name = 'Aaron Dessner' LIMIT 1);
 SET @antonoff := (SELECT artist_id FROM artists WHERE name = 'Jack Antonoff' LIMIT 1);
 
+INSERT INTO artists (name) VALUES ('Aaron Dessner');
+SET @dessner := LAST_INSERT_ID();
 INSERT INTO artists (name) VALUES ('Joe Alwyn');
 SET @alwyn := LAST_INSERT_ID();
 INSERT INTO artists (name) VALUES ('Justin Vernon');

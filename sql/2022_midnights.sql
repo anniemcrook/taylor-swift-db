@@ -35,11 +35,11 @@ SET @taylor   := (SELECT artist_id FROM artists WHERE name = 'Taylor Swift' LIMI
 SET @antonoff := (SELECT artist_id FROM artists WHERE name = 'Jack Antonoff' LIMIT 1);
 SET @dessner  := (SELECT artist_id FROM artists WHERE name = 'Aaron Dessner' LIMIT 1);
 SET @alwyn    := (SELECT artist_id FROM artists WHERE name = 'Joe Alwyn' LIMIT 1);
+-- Sounwave already exists (created in sql/2019_lover.sql for "London Boy").
+SET @sounwave := (SELECT artist_id FROM artists WHERE name = 'Sounwave' LIMIT 1);
 
 INSERT INTO artists (name) VALUES ('Zoë Kravitz');
 SET @kravitz := LAST_INSERT_ID();
-INSERT INTO artists (name) VALUES ('Sounwave');
-SET @sounwave := LAST_INSERT_ID();
 INSERT INTO artists (name) VALUES ('Jahaan Sweet');
 SET @sweet := LAST_INSERT_ID();
 INSERT INTO artists (name) VALUES ('Sam Dew');
