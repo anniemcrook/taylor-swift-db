@@ -148,6 +148,31 @@ now in the database.
       original 12 sum to 55:41, matching Apple Music's independently-
       confirmed "~55 minutes" for the full 16-track Encore edition.
       Seed data: `sql/2026_the_life_of_a_showgirl_the_encore.sql`.
+- [x] Built out the full page set: `backend/search.php` (search by
+      song title OR songwriter/producer name, showing every album
+      appearance per match with credits), `backend/compare.php`
+      (list every song with 2+ recordings, then a side-by-side
+      version-comparison table for one song — duration/album/track/
+      credits per version), and `backend/nav.php` (shared nav
+      included on every page: Home | Search | Compare Versions).
+- [x] Added album artwork via the iTunes Search API
+      (`backend/artwork.php`) — no API key needed, results cached into
+      the existing (previously unused) `albums.cover_url` column so
+      each album only ever hits the network once. Shown as a 60x60
+      thumbnail per album on the homepage and a 300x300 image at the
+      top of each tracklist page. Had to fix the matching logic once:
+      iTunes' relevance ranking doesn't always put the exact album
+      asked for first (a plain "Speak Now" query ranked "Speak Now
+      (Taylor's Version)" above the original), so the helper now
+      prefers an exact `collectionName` match before falling back to
+      "first Taylor Swift result." All 16 albums' artwork URLs are
+      pre-cached and verified to return HTTP 200.
+      On the legality of using real album art: covered with the user
+      directly (not written up here) — short version is small
+      identification-only thumbnails fetched live via Apple's public
+      iTunes Search API (rather than scraped/stored image files) was
+      the agreed approach, closest to how Discogs/MusicBrainz-style
+      sites handle it.
 
 ## Backlog / Ideas
 
@@ -155,6 +180,5 @@ now in the database.
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add any albums/bonus tracks released after *The Life of a
       Showgirl: The Encore* (Sept 2026) if and when they exist.
-- [ ] Song comparison view (e.g. original vs Taylor's Version
-      side-by-side: duration, songwriters, producers).
-- [ ] Basic styling/CSS pass on the HTML output.
+- [ ] Basic styling/CSS pass on the HTML output (everything is still
+      unstyled browser-default HTML).

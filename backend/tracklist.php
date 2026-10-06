@@ -1,6 +1,7 @@
 <?php
 // --- Database connection ---
 require __DIR__ . '/config.php';
+require __DIR__ . '/artwork.php';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
@@ -40,6 +41,8 @@ $sql = "
 $stmt = $pdo->prepare($sql);
 $stmt->execute(['albumId' => $albumId]);
 $tracks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$artwork = get_album_artwork($pdo, $albumId, $album['title']);
 ?>
 <!DOCTYPE html>
 <html>
@@ -47,7 +50,11 @@ $tracks = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title><?= htmlspecialchars($album['title']) ?> — Tracklist</title>
 </head>
 <body>
+    <?php include __DIR__ . '/nav.php'; ?>
     <h1><?= htmlspecialchars($album['title']) ?></h1>
+    <?php if ($artwork): ?>
+    <img src="<?= htmlspecialchars($artwork) ?>" width="300" height="300" alt="<?= htmlspecialchars($album['title']) ?> cover art">
+    <?php endif; ?>
     <table border="1" cellpadding="8">
         <tr>
             <th>#</th>
