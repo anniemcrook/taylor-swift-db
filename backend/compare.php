@@ -69,7 +69,7 @@ if ($songId === 0) {
 
 $pageTitle = $songId !== 0 && isset($song)
     ? $song['title'] . ' — Version Comparison'
-    : 'Compare Versions — Taylor Swift Catalogue';
+    : 'Compare Songs — Taylor Swift Catalogue';
 $currentNav = 'compare';
 ?>
 <!DOCTYPE html>
@@ -81,7 +81,7 @@ $currentNav = 'compare';
     <?php include __DIR__ . '/nav.php'; ?>
     <main id="main">
     <?php if ($songId === 0): ?>
-        <h1>Compare Versions</h1>
+        <h1>Compare Songs</h1>
         <p class="muted">Pick a song that has more than one recording to compare them side by side.</p>
         <ul class="plain-list">
             <?php foreach ($songsWithMultipleRecordings as $s): ?>

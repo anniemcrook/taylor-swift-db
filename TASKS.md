@@ -311,6 +311,21 @@ now in the database.
       "(opens in a new tab)" hint on music video links. All 4 pages
       verified live (HTTP 200, no PHP errors, correct markup/ARIA via
       curl) after the change.
+- [x] Added `backend/compare_albums.php` — a whole-album comparison
+      (not just one song): pick any two albums from a dropdown and
+      see every song either one contains, merged into one table
+      (Album A's track order first, then anything from Album B that
+      A doesn't have). Shared songs line up on the same row so you
+      can see e.g. the Nathan Chapman → Christopher Rowe producer
+      swap directly; anything unique to one side (vault tracks, etc.)
+      is labeled "(only on ...)" and shows dashes on the other side.
+      Works for any pair, not just original/Taylor's Version ones —
+      tested with two completely unrelated albums (folklore vs
+      evermore, zero shared songs) to confirm the merge logic holds
+      up generally. Renamed the old "Compare Versions" nav item/page
+      to "Compare Songs" so the two comparison modes read clearly as
+      siblings: "Compare Songs" (one song, every recording of it) vs
+      "Compare Albums" (two albums, every song on either).
 
 ## Backlog / Ideas
 
