@@ -326,6 +326,17 @@ now in the database.
       to "Compare Songs" so the two comparison modes read clearly as
       siblings: "Compare Songs" (one song, every recording of it) vs
       "Compare Albums" (two albums, every song on either).
+- [x] Redesigned Compare Albums per user feedback: the merged 7-column
+      table forced horizontal scrolling, so neither album was fully
+      visible in the window at once — the opposite of the point.
+      Replaced it with two independent columns side by side (each
+      album's own tracklist in its own track order, cover + track
+      count + total runtime in the header), with rows for songs that
+      appear on *both* albums tinted and tagged "(shared)" so the
+      overlap is still visible without forcing row-by-row alignment.
+      Columns stack vertically under 760px. Re-verified all the same
+      cases (original/TV pair, two unrelated albums, single selection,
+      invalid ID) live.
 
 ## Backlog / Ideas
 

@@ -16,7 +16,9 @@ $allAlbums = $albumsStmt->fetchAll(PDO::FETCH_ASSOC);
 $albumAId = isset($_GET['album_a']) ? (int) $_GET['album_a'] : 0;
 $albumBId = isset($_GET['album_b']) ? (int) $_GET['album_b'] : 0;
 
-// Loads one album's full tracklist, keyed by song_id, with credits.
+// Loads one album's full tracklist, in its own track order, with
+// credits — keyed by song_id so the two sides can be cross-referenced
+// for the "also on the other album" highlight.
 function load_album_tracklist(PDO $pdo, int $albumId): ?array
 {
     $albumStmt = $pdo->prepare("SELECT title FROM albums WHERE album_id = :id");
@@ -49,38 +51,85 @@ function load_album_tracklist(PDO $pdo, int $albumId): ?array
     ");
 
     $tracksBySong = [];
+    $totalSeconds = 0;
     foreach ($rows as $row) {
         $creditStmt->execute(['recId1' => $row['recording_id'], 'recId2' => $row['recording_id']]);
         $row['credits'] = $creditStmt->fetchAll(PDO::FETCH_COLUMN);
         $tracksBySong[$row['song_id']] = $row;
+        $totalSeconds += (int) $row['duration_seconds'];
     }
 
-    return ['title' => $album['title'], 'tracks' => $tracksBySong];
+    return [
+        'album_id' => $albumId,
+        'title' => $album['title'],
+        'tracks' => $tracksBySong,
+        'total_seconds' => $totalSeconds,
+    ];
 }
 
 $albumA = $albumAId ? load_album_tracklist($pdo, $albumAId) : null;
 $albumB = $albumBId ? load_album_tracklist($pdo, $albumBId) : null;
 
-$mergedRows = [];
+$sharedSongIds = [];
 if ($albumA && $albumB) {
-    // Album A's songs first, in A's own track order, then any of B's
-    // songs that A doesn't have, in B's track order.
-    $songIds = array_keys($albumA['tracks']);
-    foreach (array_keys($albumB['tracks']) as $songId) {
-        if (!in_array($songId, $songIds, true)) {
-            $songIds[] = $songId;
-        }
-    }
+    $sharedSongIds = array_intersect_key($albumA['tracks'], $albumB['tracks']);
+    $sharedSongIds = array_keys($sharedSongIds);
+}
 
-    foreach ($songIds as $songId) {
-        $inA = $albumA['tracks'][$songId] ?? null;
-        $inB = $albumB['tracks'][$songId] ?? null;
-        $mergedRows[] = [
-            'title' => ($inA ?? $inB)['title'],
-            'a' => $inA,
-            'b' => $inB,
-        ];
-    }
+function format_total_time(int $seconds): string
+{
+    $hours = intdiv($seconds, 3600);
+    $minutes = intdiv($seconds % 3600, 60);
+    $secs = $seconds % 60;
+    return $hours > 0
+        ? sprintf('%d:%02d:%02d', $hours, $minutes, $secs)
+        : sprintf('%d:%02d', $minutes, $secs);
+}
+
+// Renders one album's column: cover, title, stats, and its own
+// tracklist table with shared-song rows highlighted.
+function render_album_column(array $album, array $sharedSongIds, ?string $artwork): void
+{
+    ?>
+    <section class="compare-column">
+        <header class="compare-column-header">
+            <?php if ($artwork): ?>
+            <img class="compare-column-cover" src="<?= htmlspecialchars($artwork) ?>" width="72" height="72" alt="<?= htmlspecialchars($album['title']) ?> cover art">
+            <?php endif; ?>
+            <div>
+                <h2><a href="tracklist.php?album_id=<?= (int) $album['album_id'] ?>"><?= htmlspecialchars($album['title']) ?></a></h2>
+                <p class="muted">
+                    <?= count($album['tracks']) ?> tracks · <?= format_total_time($album['total_seconds']) ?>
+                </p>
+            </div>
+        </header>
+        <div class="table-wrap">
+            <table>
+                <caption class="visually-hidden"><?= htmlspecialchars($album['title']) ?> tracklist</caption>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Duration</th>
+                    <th scope="col">Credits</th>
+                </tr>
+                <?php foreach ($album['tracks'] as $songId => $track): ?>
+                <?php $isShared = in_array($songId, $sharedSongIds, true); ?>
+                <tr class="<?= $isShared ? 'shared-row' : '' ?>">
+                    <td><?= htmlspecialchars($track['track_number']) ?></td>
+                    <td>
+                        <?= htmlspecialchars($track['title']) ?>
+                        <?php if ($isShared): ?>
+                        <span class="tag muted">(shared)</span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= $track['duration_seconds'] ? gmdate('i:s', $track['duration_seconds']) : '—' ?></td>
+                    <td><?= htmlspecialchars(implode(', ', $track['credits'])) ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </table>
+        </div>
+    </section>
+    <?php
 }
 
 $pageTitle = ($albumA && $albumB)
@@ -124,40 +173,17 @@ $currentNav = 'compare_albums';
         <?php elseif ($albumBId && !$albumB): ?>
         <p>No album found for the second selection.</p>
         <?php elseif ($albumA && $albumB): ?>
-        <div class="table-wrap">
-            <table>
-                <caption class="visually-hidden"><?= htmlspecialchars($albumA['title']) ?> vs <?= htmlspecialchars($albumB['title']) ?></caption>
-                <tr>
-                    <th scope="col">Song</th>
-                    <th scope="col"><?= htmlspecialchars($albumA['title']) ?> — #</th>
-                    <th scope="col"><?= htmlspecialchars($albumA['title']) ?> — Duration</th>
-                    <th scope="col"><?= htmlspecialchars($albumA['title']) ?> — Credits</th>
-                    <th scope="col"><?= htmlspecialchars($albumB['title']) ?> — #</th>
-                    <th scope="col"><?= htmlspecialchars($albumB['title']) ?> — Duration</th>
-                    <th scope="col"><?= htmlspecialchars($albumB['title']) ?> — Credits</th>
-                </tr>
-                <?php foreach ($mergedRows as $row): ?>
-                <tr>
-                    <td>
-                        <?= htmlspecialchars($row['title']) ?>
-                        <?php if ($row['a'] && !$row['b']): ?>
-                        <span class="tag muted">(only on <?= htmlspecialchars($albumA['title']) ?>)</span>
-                        <?php elseif ($row['b'] && !$row['a']): ?>
-                        <span class="tag muted">(only on <?= htmlspecialchars($albumB['title']) ?>)</span>
-                        <?php endif; ?>
-                    </td>
-                    <td><?= $row['a'] ? htmlspecialchars($row['a']['track_number']) : '—' ?></td>
-                    <td><?= $row['a'] && $row['a']['duration_seconds'] ? gmdate('i:s', $row['a']['duration_seconds']) : '—' ?></td>
-                    <td><?= $row['a'] ? htmlspecialchars(implode(', ', $row['a']['credits'])) : '—' ?></td>
-                    <td><?= $row['b'] ? htmlspecialchars($row['b']['track_number']) : '—' ?></td>
-                    <td><?= $row['b'] && $row['b']['duration_seconds'] ? gmdate('i:s', $row['b']['duration_seconds']) : '—' ?></td>
-                    <td><?= $row['b'] ? htmlspecialchars(implode(', ', $row['b']['credits'])) : '—' ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
+        <p class="muted">Tracks tagged <span class="tag muted">(shared)</span> appear on both albums.</p>
+        <div class="compare-columns">
+            <?php
+            $artworkA = get_album_artwork($pdo, $albumA['album_id'], $albumA['title']);
+            $artworkB = get_album_artwork($pdo, $albumB['album_id'], $albumB['title']);
+            render_album_column($albumA, $sharedSongIds, $artworkA);
+            render_album_column($albumB, $sharedSongIds, $artworkB);
+            ?>
         </div>
         <?php else: ?>
-        <p class="muted">Pick two albums to see their tracklists side by side — shared songs line up by row, and anything unique to one album is labeled.</p>
+        <p class="muted">Pick two albums to see their tracklists side by side, with shared songs highlighted.</p>
         <?php endif; ?>
     </main>
 </body>

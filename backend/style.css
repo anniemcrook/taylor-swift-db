@@ -356,6 +356,50 @@ tbody tr:hover {
   color: var(--text-muted);
 }
 
+/* --- Album vs album comparison --- */
+
+.compare-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.compare-column-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.compare-column-cover {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  flex-shrink: 0;
+}
+
+.compare-column-header h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1.1rem;
+}
+
+.compare-column-header p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+tr.shared-row {
+  background: var(--accent-wash);
+}
+
+@media (max-width: 760px) {
+  .compare-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 480px) {
   .site-header-inner {
     padding: 0.75rem 1rem;
