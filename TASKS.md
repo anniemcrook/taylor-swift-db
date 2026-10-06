@@ -139,12 +139,22 @@ This completes the full catalog through *The Life of a Showgirl*
 every officially released deluxe/platinum/vault/anthology edition, are
 now in the database.
 
+- [x] Add *The Life of a Showgirl: The Encore* (2026-09-25) — 4 new
+      bonus tracks ("Patient Zero", "Cleveland!", "Pink Clouding",
+      "Babylon") added to the existing *The Life of a Showgirl* album
+      row as tracks 13-16, tagged edition='The Encore'. Same writer/
+      producer trio as the rest of the album (Taylor, Max Martin,
+      Shellback). Durations verified: the 4 bonus tracks plus the
+      original 12 sum to 55:41, matching Apple Music's independently-
+      confirmed "~55 minutes" for the full 16-track Encore edition.
+      Seed data: `sql/2026_the_life_of_a_showgirl_the_encore.sql`.
+
 ## Backlog / Ideas
 
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
-- [ ] Add any albums released after *The Life of a Showgirl* (2025) if
-      and when they exist.
+- [ ] Add any albums/bonus tracks released after *The Life of a
+      Showgirl: The Encore* (Sept 2026) if and when they exist.
 - [ ] Song comparison view (e.g. original vs Taylor's Version
       side-by-side: duration, songwriters, producers).
 - [ ] Basic styling/CSS pass on the HTML output.
