@@ -2,6 +2,7 @@
 // --- Database connection ---
 require __DIR__ . '/config.php';
 require __DIR__ . '/artwork.php';
+require __DIR__ . '/helpers.php';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
@@ -30,7 +31,8 @@ if (!$album) {
 
 // --- The tracklist query, now parameterized instead of hardcoded ---
 $sql = "
-    SELECT at.track_number, s.song_id, s.title, r.recording_id, r.duration_seconds
+    SELECT at.track_number, s.song_id, s.title, r.recording_id, r.duration_seconds,
+           r.music_video_url
     FROM album_tracks at
     JOIN recordings r ON at.recording_id = r.recording_id
     JOIN songs s ON r.song_id = s.song_id
@@ -55,12 +57,38 @@ $creditStmt = $pdo->prepare("
 ");
 $recordingCountStmt = $pdo->prepare("SELECT COUNT(*) FROM recordings WHERE song_id = :songId");
 
+// If this recording has no music video of its own, borrow one from
+// another recording of the same song (e.g. a Taylor's Version track
+// showing the original recording's video), preferring the original.
+$borrowedVideoStmt = $pdo->prepare("
+    SELECT music_video_url, version_type
+    FROM recordings
+    WHERE song_id = :songId
+      AND recording_id != :recordingId
+      AND music_video_url IS NOT NULL
+    ORDER BY (version_type = 'original') DESC
+    LIMIT 1
+");
+
 foreach ($tracks as &$track) {
     $creditStmt->execute(['recId1' => $track['recording_id'], 'recId2' => $track['recording_id']]);
     $track['credits'] = $creditStmt->fetchAll(PDO::FETCH_COLUMN);
 
     $recordingCountStmt->execute(['songId' => $track['song_id']]);
     $track['recording_count'] = (int) $recordingCountStmt->fetchColumn();
+
+    $track['video_note'] = null;
+    if (!$track['music_video_url']) {
+        $borrowedVideoStmt->execute([
+            'songId' => $track['song_id'],
+            'recordingId' => $track['recording_id'],
+        ]);
+        $borrowed = $borrowedVideoStmt->fetch(PDO::FETCH_ASSOC);
+        if ($borrowed) {
+            $track['music_video_url'] = $borrowed['music_video_url'];
+            $track['video_note'] = format_version_type($borrowed['version_type']);
+        }
+    }
 }
 unset($track);
 
@@ -83,6 +111,7 @@ $artwork = get_album_artwork($pdo, $albumId, $album['title']);
             <th>Title</th>
             <th>Duration</th>
             <th>Credits</th>
+            <th>Music Video</th>
         </tr>
         <?php foreach ($tracks as $track): ?>
         <tr>
@@ -95,6 +124,16 @@ $artwork = get_album_artwork($pdo, $albumId, $album['title']);
             </td>
             <td><?= $track['duration_seconds'] ? gmdate('i:s', $track['duration_seconds']) : '—' ?></td>
             <td><?= htmlspecialchars(implode(', ', $track['credits'])) ?></td>
+            <td>
+                <?php if ($track['music_video_url']): ?>
+                <a href="<?= htmlspecialchars($track['music_video_url']) ?>" target="_blank" rel="noopener">Watch</a>
+                <?php if ($track['video_note']): ?>
+                (<?= htmlspecialchars($track['video_note']) ?>)
+                <?php endif; ?>
+                <?php else: ?>
+                —
+                <?php endif; ?>
+            </td>
         </tr>
         <?php endforeach; ?>
     </table>

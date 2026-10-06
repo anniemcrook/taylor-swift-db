@@ -180,9 +180,35 @@ now in the database.
       track on every album shows its credits inline, with a
       "(compare versions)" link appearing next to the title only when
       that song actually has more than one recording.
+- [x] Added a Music Video column. Schema: `recordings.music_video_url`
+      (migration `sql/0002_add_recordings_music_video_url.sql`) — a
+      video belongs to the specific recording it was filmed for. When
+      a recording has no video of its own, `tracklist.php` borrows the
+      video from another recording of the same song (preferring the
+      'original') and labels it via `backend/helpers.php`'s
+      `format_version_type()`, e.g. "(original version)". Deliberately
+      scoped to real official music videos only — lyric videos and
+      visualizers don't count, which matters: e.g. "Love Story
+      (Taylor's Version)" only ever got a lyric video, never a new
+      full music video, so its row correctly borrows and labels the
+      2008 original's video instead of showing nothing. Verified every
+      candidate YouTube URL via YouTube's oEmbed endpoint
+      (`author_url`) before using it, specifically to confirm it's
+      actually on Taylor's own channel (`@TaylorSwift`) rather than a
+      label/fan/reaction channel reupload — the first search hit for
+      "Love Story official video" was a channel called "PopMusicMTV",
+      not her channel, so this check matters. Only "Love Story" /
+      "Love Story (Taylor's Version)" are populated so far as a
+      proof-of-concept; populating the rest of the catalog (likely
+      60-100+ videos across all 16 albums, each needing the same
+      oEmbed verification) is a large pending effort — see backlog.
 
 ## Backlog / Ideas
 
+- [ ] Populate `recordings.music_video_url` across the rest of the
+      catalog (only "Love Story"/"Love Story (Taylor's Version)" done
+      so far) — verify every URL via YouTube oEmbed's `author_url`
+      before use, same as above.
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add any albums/bonus tracks released after *The Life of a
