@@ -211,15 +211,45 @@ now in the database.
       got a lyric video (not counted), so those 5 correctly borrow and
       label the original's video via the existing logic. Seed data
       (idempotent `UPDATE`s, not a fresh migration):
-      `sql/music_videos_fearless.sql`. Full-catalog rollout to the
-      remaining 15 albums is still pending — see backlog.
+      `sql/music_videos_fearless.sql`.
+- [x] Rolled out music videos across the rest of the catalog: debut
+      album (5 singles, `sql/music_videos_debut.sql`), Speak Now (6,
+      `sql/music_videos_speak_now.sql`), Red (7 originals + the "All
+      Too Well" short film + the vault track "I Bet You Think About
+      Me", `sql/music_videos_red.sql`), 1989 (7, `sql/music_videos_1989.sql`),
+      reputation (4, `sql/music_videos_reputation.sql`), Lover (4,
+      `sql/music_videos_lover.sql`), folklore + evermore (1 each —
+      "cardigan" and "willow", `sql/music_videos_folklore_evermore.sql`),
+      Midnights (3 + the Ice Spice remix of "Karma",
+      `sql/music_videos_midnights.sql`), The Tortured Poets Department
+      (2, `sql/music_videos_ttpd.sql`), and The Life of a Showgirl incl.
+      The Encore (4, `sql/music_videos_showgirl.sql`). Every URL
+      verified via oEmbed.
+      Policy decision made along the way: a secondary channel called
+      `@TheTaylorsVersion` hosts several re-recording videos (We Are
+      Never Ever Getting Back Together TV, I Knew You Were Trouble TV,
+      22 TV, Red TV, The Last Time TV) but doesn't count as "her
+      channel" — user confirmed `@TaylorSwift` only, so those
+      recordings are left NULL and correctly borrow/label the
+      original's video instead.
+      The Wikipedia-infobox method (fetch the song's own Wikipedia
+      page, read the "Music video" field, then verify via oEmbed)
+      turned out much faster and more reliable than raw YouTube
+      search, which kept surfacing fan reuploads — used for everything
+      from 1989 onward.
+      A nice emergent result: bonus-track recordings that are
+      alternate takes of an already-videoed song (e.g. "Mine" pop mix
+      on Speak Now, "Red" demo on Red) automatically borrow and label
+      that song's video too, with no extra code — confirmed live.
+      *The Life of a Showgirl* is still an active era with singles
+      continuing to roll out, so revisit `sql/music_videos_showgirl.sql`
+      as more are released.
 
 ## Backlog / Ideas
 
-- [ ] Populate `recordings.music_video_url` across the rest of the
-      catalog (only the debut's "Love Story" pair and the Fearless era
-      done so far) — verify every URL via YouTube oEmbed's
-      `author_url` before use, same as above.
+- [ ] Add official lyric videos as a fallback for songs that only
+      have a lyric video and no full music video (currently they show
+      nothing) — user's idea, explicitly deferred to later.
 - [ ] Commit a `sql/schema.sql` dump so the schema is reproducible
       from a clean checkout (currently only exists live in MySQL).
 - [ ] Add any albums/bonus tracks released after *The Life of a
