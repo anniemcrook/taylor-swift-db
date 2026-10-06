@@ -173,6 +173,13 @@ now in the database.
       iTunes Search API (rather than scraped/stored image files) was
       the agreed approach, closest to how Discogs/MusicBrainz-style
       sites handle it.
+- [x] Fixed a gap the user caught: credits (songwriters/producers)
+      were only visible via the compare page, so any song with just
+      one recording had no way to see its credits at all. Added a
+      Credits column directly to `backend/tracklist.php` so every
+      track on every album shows its credits inline, with a
+      "(compare versions)" link appearing next to the title only when
+      that song actually has more than one recording.
 
 ## Backlog / Ideas
 
