@@ -386,11 +386,22 @@ now in the database.
       appearing only when the song actually has more than one
       recording. Verified live: the same heartbreak+moving on search
       now returns 9 correctly-ranked songs with no duplicates.
+- [x] Themes rollout, album 1 of 15: the 2006 debut "Taylor Swift"
+      (11 songs, no Taylor's Version, one recording per song). Seed
+      data: `sql/themes_debut.sql`. Added 7 new tags on top of
+      Fearless's 42 (49 total), 33 new `recording_themes` rows (168
+      total). Verified counts and per-song tag content in the
+      database, and spot-checked live via `moods.php` (nostalgia
+      search correctly includes Tim McGraw, Mary's Song, Our Song
+      alongside the Fearless-era matches).
 
 ## Backlog / Ideas
 
-- [ ] Populate themes/moods across the rest of the catalog (only the
-      Fearless era done so far).
+- [ ] Continue the themes/moods rollout to the remaining 14
+      albums/eras (debut done; Fearless done as the trial): Speak Now
+      + TV, Red + TV, 1989 + TV, reputation, Lover, folklore, evermore,
+      Midnights, The Tortured Poets Department, The Life of a
+      Showgirl (+ The Encore).
 
 - [ ] Add official lyric videos as a fallback for songs that only
       have a lyric video and no full music video (currently they show
