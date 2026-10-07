@@ -491,8 +491,154 @@ now in the database.
       a considered first draft, not ground truth, and especially so
       for The Life of a Showgirl given how recent it is.
 
+## Backlog / Ideas
+
 - [ ] Add official lyric videos as a fallback for songs that only
       have a lyric video and no full music video (currently they show
       nothing) — user's idea, explicitly deferred to later.
 - [ ] Add any albums/bonus tracks released after *The Life of a
       Showgirl: The Encore* (Sept 2026) if and when they exist.
+
+## Feature backlog (user-proposed, 2026-10-07)
+
+User came up with a broad list of possible next features. Recommended
+starting point — **Song Recommendations** — is being discussed
+separately; everything else (including the parts of that list not
+picked yet) is logged here for later. Feasibility notes reflect the
+current stack: plain PHP/PDO + MySQL, no JS anywhere yet, no user
+accounts, no framework.
+
+Already done, not backlog: *Official Music Video Links* (item 14) —
+`tracklist.php` already links every recording's video where one
+exists, falling back to another version's video when a bonus/vault
+track borrows one.
+
+### Core interactive features
+- [ ] Favourite Song Tournament — pairwise "pick one" bracket across
+      the catalogue, ending in a personal ranking. The most
+      involved item on the list: needs a real algorithm (seeding,
+      avoiding redundant repeat comparisons, converging to a full
+      order from partial pairwise picks) on top of state tracked
+      across requests (no accounts, so this likely means session or
+      URL-encoded state). Biggest payoff, biggest build.
+- [ ] Build Your Own Playlist — pick songs, cap the track count, name
+      it, see it rendered as an album-style card. Picking/naming/
+      capping is plain forms; drag-and-drop reordering is this
+      project's first real case for client-side JS.
+- [ ] Song Recommendations — on a song's page, show others with
+      overlapping themes/moods and explain why. Directly reuses the
+      `recording_themes` data just finished rolling out across the
+      whole catalogue — low new-data cost. Needs a dedicated song
+      detail page first (today songs only appear embedded in
+      `tracklist.php` rows or `compare.php`, there's no `song.php`).
+
+### Data & statistics
+- [ ] Catalogue Statistics Dashboard — totals, per-album breakdowns,
+      longest/shortest albums, collaboration counts, songs per
+      theme, etc. Pure aggregate SQL over existing tables, no new
+      schema, no JS — probably the single lowest-effort item here.
+- [ ] Interactive Album Timeline — albums in release order with
+      dates, each clickable through to its tracklist. No JS needed;
+      basically a differently-sorted, differently-styled version of
+      the existing homepage album grid.
+- [ ] Song/Album Data Visualisations — charts comparing album sizes,
+      release years, theme counts. Could stay JS-free with CSS-only
+      bar charts for simple cases, but anything more chart-like
+      (e.g. a timeline plot) would want a small charting library —
+      this project's first external JS dependency.
+- [ ] Song DNA / Profile — a visual "fingerprint" per song from its
+      themes/mood/metadata, with two songs comparable side by side.
+      Needs real visual design work; natural to build once a song
+      detail page and the stats groundwork both exist.
+
+### Discovery
+- [ ] Enhanced Search — extend `search.php` to match writers/
+      producers/artists too (not just song/album titles), and
+      highlight the matched term in results. Builds directly on the
+      existing search page and the songwriter/producer junction
+      tables already in the schema.
+- [ ] Advanced Filters — album, era, mood/theme, track number,
+      original vs. Taylor's Version, collaborations. All filterable
+      with data already in the schema (`version_type`,
+      `recording_themes`, `album_tracks`); mainly a UI/query-builder
+      problem, same GET-param pattern `moods.php` already uses for
+      multi-select themes.
+- [ ] Random Song / Random Album — "surprise me" links straight to a
+      random tracklist or song. Trivial: `ORDER BY RAND() LIMIT 1`
+      (or an app-level random pick) plus a redirect.
+- [ ] Song Connections — surface shared themes/moods/album/writers
+      between songs. Same underlying data as Song Recommendations;
+      likely the same feature looked at from a "show me the web of
+      connections" angle rather than "show me similar songs."
+
+### External media
+- [ ] Music Video Explorer — a dedicated page listing every song
+      with an official music video, filterable/searchable. All the
+      data (`music_video_url`) already exists from the earlier
+      music-video rollout; this is a new filtered view over it, no
+      new data needed.
+
+### Personalisation
+- [ ] Favourite Songs — mark songs as favourites, see them on a
+      personal page, stored in the browser (no account). First real
+      use of `localStorage` in this project.
+- [ ] Personal Ratings — rate songs, see personal ratings, pairs
+      naturally with the tournament feature. Same `localStorage`
+      approach as Favourite Songs.
+- [ ] Personal Album Rankings — rank whole albums, same storage
+      approach as the above two.
+- [ ] Shareable Results — let a tournament/ranking result be shared
+      via a URL rather than requiring an account (e.g. encode the
+      ranking as a compact query-string param). Depends on the
+      Tournament feature existing first.
+
+### Quality / portfolio features
+- [ ] Accessibility Pass — keyboard nav, focus states, semantic
+      HTML, alt text, contrast, screen-reader-friendly controls,
+      reduced-motion support. No new infrastructure — an audit and
+      fix-up pass over what's already built; some groundwork exists
+      already (`.visually-hidden`, `:focus-visible` styles, `aria-
+      current` in nav).
+- [ ] Responsive Design pass — the comparison and tournament UIs
+      specifically, on phones. Partly done already (the 480px/760px
+      media queries, the `main.wide` override); would mainly need
+      checking once the newer interactive features (tournament,
+      playlist builder) exist, since those are the layouts most
+      likely to break on narrow screens.
+- [ ] Dark Mode toggle — manual light/dark switch that remembers the
+      choice, on top of the `prefers-color-scheme` support already
+      in `style.css`. Needs a small bit of JS plus `localStorage`
+      for the remembered preference.
+- [ ] Loading/Error/Empty States — handle missing data, broken
+      external links (iTunes artwork, YouTube videos), empty search
+      results, slow loads gracefully. An audit/polish pass across
+      existing pages rather than new functionality.
+- [ ] Performance Optimisation — image lazy-loading, avoiding
+      loading the whole catalogue at once, mobile performance
+      checks. Low urgency at the current catalogue size/traffic, but
+      cheap wins exist now (e.g. `loading="lazy"` on album art).
+
+### Content / documentation
+- [ ] Image Credits & Licences page — source and licence for every
+      externally-sourced image (album art came from the iTunes
+      Search API), with required attribution called out. Worth
+      doing before this is ever public, same urgency tier as the
+      "Deferred until going public" items above.
+- [ ] About the Project page — unofficial fan project, its purpose,
+      the tech stack, built as a dev portfolio piece. Trivial static
+      page using the existing `head.php`/`nav.php` partials.
+- [ ] Data Sources page — Wikipedia for catalogue data, iTunes
+      Search API for artwork, YouTube oEmbed for music-video
+      verification, plus the explicit caveat that themes/moods are
+      the author's own unverified reading. Trivial static page.
+- [ ] Privacy page — state plainly that the only client-side storage
+      (once personalisation features exist) is `localStorage`, no
+      accounts, no analytics, nothing sent anywhere. Trivial once
+      it's actually true — write this alongside whichever
+      personalisation feature ships first.
+- [ ] Clear Unofficial Branding — explicit, visible "not affiliated
+      with or endorsed by Taylor Swift or Taylor Nation" messaging
+      (footer/about page), and avoid any visual styling that could
+      look like an official site. Same urgency tier as the
+      "Deferred until going public" items — worth doing before/at
+      the same time as making this public, alongside Image Credits.
