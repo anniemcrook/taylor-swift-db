@@ -464,12 +464,20 @@ now in the database.
       database, and spot-checked live via `moods.php` (an
       exhaustion-only search
       correctly surfaces "You're Losing Me").
+- [x] Themes rollout, era 10 of 11: The Tortured Poets Department
+      (The Anthology edition, all 31 tracks as one album entry). No
+      Taylor's Version, one recording per song. Seed data:
+      `sql/themes_ttpd.sql`. Added 10 new tags (139 total), 93 new
+      `recording_themes` rows (903 total). Verified counts and
+      per-song content in the database, and spot-checked live via
+      `moods.php` (a tenderness-only search correctly surfaces
+      "Robin").
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the final 2 albums
-      (everything else done, Fearless as the trial): The Tortured
-      Poets Department, The Life of a Showgirl.
+- [ ] Continue the themes/moods rollout to the final album: The
+      Life of a Showgirl (everything else done, Fearless as the
+      trial).
 
 - [ ] Add official lyric videos as a fallback for songs that only
       have a lyric video and no full music video (currently they show
