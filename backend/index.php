@@ -41,5 +41,6 @@ $currentNav = 'home';
             <?php endforeach; ?>
         </ul>
     </main>
+    <?php include __DIR__ . '/footer.php'; ?>
 </body>
 </html>

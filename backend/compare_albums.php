@@ -186,5 +186,6 @@ $currentNav = 'compare_albums';
         <p class="muted">Pick two albums to see their tracklists side by side, with shared songs highlighted.</p>
         <?php endif; ?>
     </main>
+    <?php include __DIR__ . '/footer.php'; ?>
 </body>
 </html>

@@ -490,6 +490,28 @@ now in the database.
       other authority like the rest of this database — treat them as
       a considered first draft, not ground truth, and especially so
       for The Life of a Showgirl given how recent it is.
+- [x] Built the 4 documentation pages from the user-proposed feature
+      backlog (first item tackled from that list): `backend/about.php`
+      (project purpose, tech stack, portfolio framing, link to the
+      GitHub repo), `backend/data_sources.php` (Wikipedia for
+      catalogue data, iTunes Search API for artwork, YouTube oEmbed
+      for music-video verification, plus the standing caveat that
+      themes/moods are unverified), `backend/privacy.php` (no
+      accounts, no analytics, no cookies — nothing to say beyond
+      that), and `backend/credits.php` (Image Credits & Licences —
+      documents that all artwork comes from the iTunes Search API,
+      is copyrighted by the respective label/artist, used here only
+      for identification on a non-commercial fan project, and
+      explicitly flagged for review before any public/commercial
+      deployment).
+      Also added `backend/footer.php`, a shared footer partial
+      (unofficial-fan-project notice + links to all 4 pages) now
+      included on every page — this covers "Clear Unofficial
+      Branding" from the same backlog, sitewide rather than as its
+      own separate page. Styled in `style.css` to match the existing
+      site-header pattern. Verified live: all 4 pages return 200,
+      the footer renders exactly once on every existing page, no
+      PHP errors in the dev server log.
 
 ## Backlog / Ideas
 
@@ -619,26 +641,6 @@ track borrows one.
       cheap wins exist now (e.g. `loading="lazy"` on album art).
 
 ### Content / documentation
-- [ ] Image Credits & Licences page — source and licence for every
-      externally-sourced image (album art came from the iTunes
-      Search API), with required attribution called out. Worth
-      doing before this is ever public, same urgency tier as the
-      "Deferred until going public" items above.
-- [ ] About the Project page — unofficial fan project, its purpose,
-      the tech stack, built as a dev portfolio piece. Trivial static
-      page using the existing `head.php`/`nav.php` partials.
-- [ ] Data Sources page — Wikipedia for catalogue data, iTunes
-      Search API for artwork, YouTube oEmbed for music-video
-      verification, plus the explicit caveat that themes/moods are
-      the author's own unverified reading. Trivial static page.
-- [ ] Privacy page — state plainly that the only client-side storage
-      (once personalisation features exist) is `localStorage`, no
-      accounts, no analytics, nothing sent anywhere. Trivial once
-      it's actually true — write this alongside whichever
-      personalisation feature ships first.
-- [ ] Clear Unofficial Branding — explicit, visible "not affiliated
-      with or endorsed by Taylor Swift or Taylor Nation" messaging
-      (footer/about page), and avoid any visual styling that could
-      look like an official site. Same urgency tier as the
-      "Deferred until going public" items — worth doing before/at
-      the same time as making this public, alongside Image Credits.
+All 5 items here (Image Credits & Licences, About the Project, Data
+Sources, Privacy, Clear Unofficial Branding) are done — see the
+"Completed" section above.

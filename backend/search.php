@@ -116,5 +116,6 @@ $currentNav = 'search';
             <?php endforeach; ?>
         <?php endif; ?>
     </main>
+    <?php include __DIR__ . '/footer.php'; ?>
 </body>
 </html>
