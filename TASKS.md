@@ -374,6 +374,18 @@ now in the database.
       the empty-result state for an unused/invalid theme.
       Full-catalog rollout to the remaining 15 albums is still
       pending — see backlog.
+- [x] Consolidated the Moods playlist per user feedback: originally
+      grouped by *recording*, so a song with both an original and a
+      Taylor's Version (tagged identically) showed up twice — 15
+      "tracks" for heartbreak+moving on when there were really only 9
+      distinct songs. Regrouped by song: `match_count` is now how many
+      of the selected themes appear on *any* recording of that song,
+      and each result shows one representative recording (preferring
+      the original) for its album/duration, with a "(compare
+      versions)" link — reusing the existing Compare Songs page —
+      appearing only when the song actually has more than one
+      recording. Verified live: the same heartbreak+moving on search
+      now returns 9 correctly-ranked songs with no duplicates.
 
 ## Backlog / Ideas
 

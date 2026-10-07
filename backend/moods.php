@@ -29,34 +29,58 @@ $playlist = [];
 if ($selectedThemeIds !== []) {
     $placeholders = implode(',', array_fill(0, count($selectedThemeIds), '?'));
 
+    // Grouped by song, not recording — a song with both an original
+    // and a Taylor's Version carrying the same themes should appear
+    // once, not twice. match_count is how many of the selected themes
+    // appear on *any* recording of that song.
     $playlistStmt = $pdo->prepare("
-        SELECT r.recording_id, s.title AS song_title, r.version_type, r.duration_seconds,
-               al.album_id, al.title AS album_title, at.track_number,
-               COUNT(DISTINCT rt.theme_id) AS match_count
+        SELECT s.song_id, s.title AS song_title, COUNT(DISTINCT rt.theme_id) AS match_count
         FROM recording_themes rt
         JOIN recordings r ON r.recording_id = rt.recording_id
         JOIN songs s ON s.song_id = r.song_id
-        LEFT JOIN album_tracks at ON at.recording_id = r.recording_id
-        LEFT JOIN albums al ON al.album_id = at.album_id
         WHERE rt.theme_id IN ($placeholders)
-        GROUP BY r.recording_id, s.title, r.version_type, r.duration_seconds, al.album_id, al.title, at.track_number
-        ORDER BY match_count DESC, al.release_date, at.track_number
+        GROUP BY s.song_id, s.title
+        ORDER BY match_count DESC, s.title
     ");
     $playlistStmt->execute($selectedThemeIds);
     $playlist = $playlistStmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Themes per matched recording, for context on *why* it matched.
+    // All themes tagged on any recording of the song, for context on
+    // *why* it matched (not just the ones that happened to match).
     $themeListStmt = $pdo->prepare("
-        SELECT t.name FROM recording_themes rt
+        SELECT DISTINCT t.name FROM recording_themes rt
         JOIN themes t ON t.theme_id = rt.theme_id
-        WHERE rt.recording_id = :recordingId
+        JOIN recordings r ON r.recording_id = rt.recording_id
+        WHERE r.song_id = :songId
         ORDER BY t.name
     ");
-    foreach ($playlist as &$track) {
-        $themeListStmt->execute(['recordingId' => $track['recording_id']]);
-        $track['themes'] = $themeListStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    // One representative recording per song, preferring the
+    // original, for the album/duration shown — plus how many
+    // recordings the song has in total, for the "compare" link.
+    $representativeStmt = $pdo->prepare("
+        SELECT r.recording_id, r.version_type, r.duration_seconds,
+               al.album_id, al.title AS album_title, at.track_number
+        FROM recordings r
+        LEFT JOIN album_tracks at ON at.recording_id = r.recording_id
+        LEFT JOIN albums al ON al.album_id = at.album_id
+        WHERE r.song_id = :songId
+        ORDER BY (r.version_type = 'original') DESC, al.release_date, at.track_number
+        LIMIT 1
+    ");
+    $recordingCountStmt = $pdo->prepare("SELECT COUNT(*) FROM recordings WHERE song_id = :songId");
+
+    foreach ($playlist as &$song) {
+        $themeListStmt->execute(['songId' => $song['song_id']]);
+        $song['themes'] = $themeListStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $representativeStmt->execute(['songId' => $song['song_id']]);
+        $song['representative'] = $representativeStmt->fetch(PDO::FETCH_ASSOC);
+
+        $recordingCountStmt->execute(['songId' => $song['song_id']]);
+        $song['recording_count'] = (int) $recordingCountStmt->fetchColumn();
     }
-    unset($track);
+    unset($song);
 }
 
 $pageTitle = 'Moods — Taylor Swift Catalogue';
@@ -92,20 +116,23 @@ $currentNav = 'moods';
         </form>
 
         <?php if ($selectedThemeIds !== []): ?>
-        <h2><?= count($playlist) ?> track<?= count($playlist) === 1 ? '' : 's' ?></h2>
+        <h2><?= count($playlist) ?> song<?= count($playlist) === 1 ? '' : 's' ?></h2>
         <ol class="plain-list">
-            <?php foreach ($playlist as $track): ?>
+            <?php foreach ($playlist as $song): ?>
+            <?php $rep = $song['representative']; ?>
             <li>
-                <strong><?= htmlspecialchars($track['song_title']) ?></strong>
-                <span class="muted">(<?= htmlspecialchars($track['version_type']) ?>)</span>
-                <?php if ($track['album_title']): ?>
-                — <a href="tracklist.php?album_id=<?= (int) $track['album_id'] ?>"><?= htmlspecialchars($track['album_title']) ?></a>
+                <strong><?= htmlspecialchars($song['song_title']) ?></strong>
+                <?php if ($song['recording_count'] > 1): ?>
+                <a href="compare.php?song_id=<?= (int) $song['song_id'] ?>">(compare versions)</a>
                 <?php endif; ?>
-                <?php if ($track['duration_seconds']): ?>
-                · <?= gmdate('i:s', $track['duration_seconds']) ?>
+                <?php if ($rep && $rep['album_title']): ?>
+                — <a href="tracklist.php?album_id=<?= (int) $rep['album_id'] ?>"><?= htmlspecialchars($rep['album_title']) ?></a>
+                <?php endif; ?>
+                <?php if ($rep && $rep['duration_seconds']): ?>
+                · <?= gmdate('i:s', $rep['duration_seconds']) ?>
                 <?php endif; ?>
                 <br>
-                <span class="tag muted">Themes: <?= htmlspecialchars(implode(', ', $track['themes'])) ?></span>
+                <span class="tag muted">Themes: <?= htmlspecialchars(implode(', ', $song['themes'])) ?></span>
             </li>
             <?php endforeach; ?>
         </ol>
