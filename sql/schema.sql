@@ -3,12 +3,12 @@
 -- To rebuild the database from scratch:
 --   1. CREATE DATABASE taylor_swift_db;
 --   2. mysql taylor_swift_db < sql/schema.sql
---      This already includes everything sql/0001_add_album_tracks_edition.sql
---      and sql/0002_add_recordings_music_video_url.sql once added —
---      those two files are kept only as a historical record of when
---      `edition` and `music_video_url` were introduced; don't run
---      them against a database built from this file, or you'll get a
---      "duplicate column" error.
+--      This already includes everything sql/0001_add_album_tracks_edition.sql,
+--      sql/0002_add_recordings_music_video_url.sql, and
+--      sql/0003_add_themes.sql — those files are kept only as a
+--      historical record of when each change was introduced; don't
+--      run them against a database built from this file, or you'll
+--      get a "duplicate column"/"table already exists" error.
 --   3. mysql taylor_swift_db < sql/0000_core_artists.sql
 --      Bootstraps Taylor Swift, Max Martin, Shellback, and Nathan
 --      Chapman — the only artists no dated seed file ever inserts
@@ -37,7 +37,15 @@
 --   - `artists` + the two junction tables credit songwriters and
 --     producers per recording (not per song — credits can differ
 --     between the original and a re-recording).
+--   - `themes` + `recording_themes` tag each recording with free-form
+--     mood/theme words (e.g. "heartbreak", "nostalgia") for the
+--     search-by-theme / playlist-suggestion feature. Deliberately per
+--     recording rather than per song, same reasoning as credits: a
+--     10-minute extended cut or an acoustic take can read differently
+--     from the original even though the underlying song is the same.
 
+DROP TABLE IF EXISTS `recording_themes`;
+DROP TABLE IF EXISTS `themes`;
 DROP TABLE IF EXISTS `recording_producers`;
 DROP TABLE IF EXISTS `recording_songwriters`;
 DROP TABLE IF EXISTS `album_tracks`;
@@ -107,4 +115,20 @@ CREATE TABLE `recording_producers` (
   KEY `artist_id` (`artist_id`),
   CONSTRAINT `recording_producers_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`recording_id`),
   CONSTRAINT `recording_producers_ibfk_2` FOREIGN KEY (`artist_id`) REFERENCES `artists` (`artist_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `themes` (
+  `theme_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`theme_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `recording_themes` (
+  `recording_id` int NOT NULL,
+  `theme_id` int NOT NULL,
+  PRIMARY KEY (`recording_id`, `theme_id`),
+  KEY `theme_id` (`theme_id`),
+  CONSTRAINT `recording_themes_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`recording_id`),
+  CONSTRAINT `recording_themes_ibfk_2` FOREIGN KEY (`theme_id`) REFERENCES `themes` (`theme_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

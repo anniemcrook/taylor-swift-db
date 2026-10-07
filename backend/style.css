@@ -401,6 +401,62 @@ tr.shared-row {
   background: var(--accent-wash);
 }
 
+/* --- Moods / theme picker --- */
+
+.theme-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  border: none;
+  padding: 0;
+  margin: 0 0 1.25rem;
+}
+
+.theme-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.theme-chip:has(input:checked) {
+  background: var(--accent-wash);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.theme-picker + button {
+  padding: 0.65rem 1.3rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+}
+
+.theme-picker + button:hover {
+  background: var(--accent-hover);
+}
+
+ol.plain-list {
+  padding-left: 0;
+  counter-reset: none;
+}
+
+ol.plain-list li {
+  line-height: 1.6;
+}
+
 @media (max-width: 760px) {
   .compare-columns {
     grid-template-columns: 1fr;

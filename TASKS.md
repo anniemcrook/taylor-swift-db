@@ -343,8 +343,42 @@ now in the database.
       `main.wide` CSS rule (1400px) used only on
       `backend/compare_albums.php`; every other page keeps the
       960px width, which suits a single tracklist/search list fine.
+- [x] Started the new "themes/moods" phase: search by theme/mood to
+      get playlist suggestions. Per user decision: free-form tags
+      (no fixed vocabulary) attached per *recording* (not per song),
+      since a 10-minute extended cut or an acoustic take can read
+      differently from the original even when the underlying song is
+      unchanged.
+      Schema: `themes` (name `UNIQUE` — learned from the Sounwave
+      duplicate-artist bug, so duplicates are impossible by
+      constraint, not just convention) + `recording_themes` junction.
+      Migration: `sql/0003_add_themes.sql`.
+      Feature: `backend/moods.php` — a chip-style multi-select of
+      every theme (with a live count of how many recordings carry
+      it), builds a ranked "playlist" of matching recordings on
+      submit. Matching is OR across selected themes, with tracks
+      matching *more* of the selected themes ranked first (ties broken
+      by album release date/track number); each result shows which of
+      its themes matched, for transparency.
+      **Important caveat, flagged to the user up front**: unlike
+      every other fact in this database, themes are my own
+      interpretation of each song's content — there's no Wikipedia
+      infobox to verify against, so treat them as a first draft, not
+      ground truth.
+      Did the Fearless era (all 19 original + 26 Taylor's Version
+      recordings, 42 distinct tags, shared songs tagged identically on
+      both versions) as the trial run, same pattern as the music video
+      rollout. Seed data: `sql/themes_fearless.sql`. Verified the whole
+      feature live — chip rendering, multi-theme OR matching with
+      correct match-count ranking, per-track theme transparency, and
+      the empty-result state for an unused/invalid theme.
+      Full-catalog rollout to the remaining 15 albums is still
+      pending — see backlog.
 
 ## Backlog / Ideas
+
+- [ ] Populate themes/moods across the rest of the catalog (only the
+      Fearless era done so far).
 
 - [ ] Add official lyric videos as a fallback for songs that only
       have a lyric video and no full music video (currently they show
