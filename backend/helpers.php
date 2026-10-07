@@ -10,6 +10,7 @@ function format_version_type(string $versionType): string
         'remix' => 'remix',
         'acoustic' => 'acoustic version',
         'demo' => 'demo',
+        'other' => 'extended version',
         default => $versionType,
     };
 }

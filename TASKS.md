@@ -536,6 +536,29 @@ now in the database.
       message instead of an empty "Similar songs" section; invalid/
       missing `song_id` both error the same way the rest of the site
       does; no PHP errors in the dev server log.
+- [x] Built the Catalogue Statistics Dashboard (third item from the
+      user-proposed feature backlog) — `backend/stats.php`, added
+      to the main nav. Headline numbers (albums, songs, recordings,
+      themes tagged, combined runtime, songs with a music video,
+      vault-track count, outside-collaborator count) plus: a
+      per-album table (track count, total length, average track
+      length) with the longest/shortest album called out; longest/
+      shortest individual recording; top 10 most frequent outside
+      songwriters/producers; the 12 most common themes by distinct
+      song count, each linking straight into `moods.php`; and a
+      breakdown of recordings by version type. All pure aggregate
+      SQL over existing tables, no new schema.
+      Added a `'other'` mapping to `format_version_type()` in
+      `helpers.php` ("extended version") since that's the version
+      type used for All Too Well (10 Minute Version) and it was
+      previously falling through to the raw enum value.
+      Verified live: all headline numbers and the per-album/
+      collaborator/theme breakdowns match direct database counts,
+      the longest recording correctly resolves to All Too Well (10
+      Minute Version) at 10:13, no PHP errors in the dev server log.
+      **This completes all three items the user picked from the
+      feature backlog, in order: documentation pages, Song
+      Recommendations, Catalogue Statistics Dashboard.**
 
 ## Backlog / Ideas
 
@@ -549,11 +572,11 @@ now in the database.
 
 User came up with a broad list of possible next features and picked
 an order to tackle three of them: (1) documentation pages, (2) Song
-Recommendations, (3) Catalogue Statistics Dashboard — see the
-"Completed" section above for each as they're finished. Everything
-else on the original list (including parts not picked yet) is logged
-here for later. Feasibility notes reflect the current stack: plain
-PHP/PDO + MySQL, no JS anywhere yet, no user accounts, no framework.
+Recommendations, (3) Catalogue Statistics Dashboard — **all three
+are now done, see "Completed" above.** Everything else on the
+original list (including parts not picked yet) is logged here for
+later. Feasibility notes reflect the current stack: plain PHP/PDO +
+MySQL, no JS anywhere yet, no user accounts, no framework.
 
 Already done, not backlog: *Official Music Video Links* (item 14) —
 `tracklist.php` already links every recording's video where one
@@ -575,10 +598,7 @@ pages are also done — see "Completed" above.
       project's first real case for client-side JS.
 
 ### Data & statistics
-- [ ] Catalogue Statistics Dashboard — totals, per-album breakdowns,
-      longest/shortest albums, collaboration counts, songs per
-      theme, etc. Pure aggregate SQL over existing tables, no new
-      schema, no JS — probably the single lowest-effort item here.
+*Catalogue Statistics Dashboard* is done — see "Completed" above.
 - [ ] Interactive Album Timeline — albums in release order with
       dates, each clickable through to its tracklist. No JS needed;
       basically a differently-sorted, differently-styled version of
