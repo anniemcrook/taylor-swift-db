@@ -144,7 +144,7 @@ $currentNav = 'compare_albums';
 </head>
 <body>
     <?php include __DIR__ . '/nav.php'; ?>
-    <main id="main">
+    <main id="main" class="wide">
         <h1>Compare Albums</h1>
         <form class="search-form" method="get" action="compare_albums.php">
             <label class="visually-hidden" for="album_a">First album</label>

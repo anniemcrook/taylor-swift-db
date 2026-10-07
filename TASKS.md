@@ -337,6 +337,12 @@ now in the database.
       Columns stack vertically under 760px. Re-verified all the same
       cases (original/TV pair, two unrelated albums, single selection,
       invalid ID) live.
+- [x] Widened Compare Albums per user feedback — every page shares a
+      960px `main` reading-width, which left the two columns squeezed
+      into narrow strips in the middle of wide screens. Added a
+      `main.wide` CSS rule (1400px) used only on
+      `backend/compare_albums.php`; every other page keeps the
+      960px width, which suits a single tracklist/search list fine.
 
 ## Backlog / Ideas
 

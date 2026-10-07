@@ -154,6 +154,13 @@ main {
   padding: 2rem 1.5rem 4rem;
 }
 
+/* Compare Albums needs real room for two tracklists side by side —
+   the default reading-width main is fine for a single table, but
+   cramps two of them into narrow columns. */
+main.wide {
+  max-width: 1400px;
+}
+
 h1 {
   font-size: 1.75rem;
   margin: 0 0 1.25rem;
