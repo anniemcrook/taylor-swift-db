@@ -416,12 +416,19 @@ now in the database.
       catharsis-only search correctly surfaces All Too Well with a
       "(compare versions)" link, even though only the 10-minute
       recording carries that tag).
+- [x] Themes rollout, album 4 of 15: 1989 + 1989 (Taylor's Version).
+      16 songs shared between both versions, 5 vault tracks TV-only.
+      Seed data: `sql/themes_1989.sql`. Added 11 new tags (100
+      total), 111 new `recording_themes` rows (543 total). Verified
+      counts and per-song content in the database, and spot-checked
+      live via `moods.php` (a humiliation-only search correctly
+      surfaces "Is It Over Now?").
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the remaining 12
-      albums/eras (debut, Speak Now, and Red done; Fearless done as
-      the trial): 1989 + TV, reputation, Lover, folklore, evermore,
+- [ ] Continue the themes/moods rollout to the remaining 11
+      albums/eras (debut, Speak Now, Red, and 1989 done; Fearless
+      done as the trial): reputation, Lover, folklore, evermore,
       Midnights, The Tortured Poets Department, The Life of a
       Showgirl (+ The Encore).
 
