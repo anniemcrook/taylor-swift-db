@@ -451,14 +451,25 @@ now in the database.
       per-song content in the database, and spot-checked live via
       `moods.php` (a letting-go-only search correctly surfaces
       "it's time to go").
+- [x] Themes rollout, era 9 of 11 (the "15" in earlier entries was
+      an overcount — there are 16 albums total, counted as one era
+      each for the 3 Taylor's Version pairs plus 10 standalone
+      albums, no separate Encore/anthology row): Midnights (the
+      combined 3am + Till Dawn edition, one album entry in this
+      catalog). No Taylor's Version, one recording per song, 22
+      distinct songs (the "Snow on the Beach" and "Karma" remixes
+      aren't separately tagged). Seed data: `sql/themes_midnights.sql`.
+      Added 7 new tags (129 total), 66 new `recording_themes` rows
+      (810 total). Verified counts and per-song content in the
+      database, and spot-checked live via `moods.php` (an
+      exhaustion-only search
+      correctly surfaces "You're Losing Me").
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the remaining 7
-      albums/eras (debut, Speak Now, Red, 1989, reputation, Lover,
-      folklore, and evermore done; Fearless done as the trial):
-      Midnights, The Tortured Poets Department, The Life of a
-      Showgirl (+ The Encore).
+- [ ] Continue the themes/moods rollout to the final 2 albums
+      (everything else done, Fearless as the trial): The Tortured
+      Poets Department, The Life of a Showgirl.
 
 - [ ] Add official lyric videos as a fallback for songs that only
       have a lyric video and no full music video (currently they show
