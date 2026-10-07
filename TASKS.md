@@ -423,12 +423,19 @@ now in the database.
       counts and per-song content in the database, and spot-checked
       live via `moods.php` (a humiliation-only search correctly
       surfaces "Is It Over Now?").
+- [x] Themes rollout, album 5 of 15: reputation. No Taylor's
+      Version yet, so one recording per song, 15 songs. Seed data:
+      `sql/themes_reputation.sql`. Added 3 new tags (103 total), 45
+      new `recording_themes` rows (588 total). Verified counts and
+      per-song content in the database, and spot-checked live via
+      `moods.php` (a devotion-only search correctly surfaces "New
+      Year's Day").
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the remaining 11
-      albums/eras (debut, Speak Now, Red, and 1989 done; Fearless
-      done as the trial): reputation, Lover, folklore, evermore,
+- [ ] Continue the themes/moods rollout to the remaining 10
+      albums/eras (debut, Speak Now, Red, 1989, and reputation done;
+      Fearless done as the trial): Lover, folklore, evermore,
       Midnights, The Tortured Poets Department, The Life of a
       Showgirl (+ The Encore).
 
