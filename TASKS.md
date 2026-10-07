@@ -437,12 +437,19 @@ now in the database.
       per-song content in the database, and spot-checked live via
       `moods.php` (an empowerment-only search correctly surfaces
       "The Man").
+- [x] Themes rollout, album 7 of 15: folklore. No Taylor's Version
+      yet, so one recording per song, 17 songs. Seed data:
+      `sql/themes_folklore.sql`. Added 11 new tags (117 total), 51
+      new `recording_themes` rows (693 total). Verified counts and
+      per-song content in the database, and spot-checked live via
+      `moods.php` (a tranquility-only search correctly surfaces
+      "the lakes").
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the remaining 9
-      albums/eras (debut, Speak Now, Red, 1989, reputation, and
-      Lover done; Fearless done as the trial): folklore, evermore,
+- [ ] Continue the themes/moods rollout to the remaining 8
+      albums/eras (debut, Speak Now, Red, 1989, reputation, Lover,
+      and folklore done; Fearless done as the trial): evermore,
       Midnights, The Tortured Poets Department, The Life of a
       Showgirl (+ The Encore).
 
