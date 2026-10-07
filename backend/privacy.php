@@ -17,7 +17,14 @@ $currentNav = null;
         <ul>
             <li>No accounts, logins, or sign-ups anywhere on this site.</li>
             <li>No analytics, tracking scripts, or third-party trackers of any kind.</li>
-            <li>No cookies are set, and nothing is stored in your browser.</li>
+            <li>No cookies are set.</li>
+            <li>
+                <a href="favourites.php">Favourites</a> are saved using
+                your browser's local storage, not a cookie — the list
+                of songs you've starred lives only on this device, in
+                this browser. It's never sent to a server, never
+                shared, and clearing your browser data removes it.
+            </li>
             <li>
                 The only outside requests this site makes are
                 server-side, to fetch album artwork and verify music
@@ -28,11 +35,9 @@ $currentNav = null;
         </ul>
 
         <p class="muted">
-            If personalisation features (favourites, ratings, that
-            kind of thing) are ever added, anything they store will
-            live only in your own browser's local storage — never
-            sent to a server, never shared, and this page will be
-            updated to say so explicitly.
+            If more personalisation features (ratings, rankings, that
+            kind of thing) are added later, they'll work the same way
+            — saved locally in your browser, nothing sent to a server.
         </p>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>

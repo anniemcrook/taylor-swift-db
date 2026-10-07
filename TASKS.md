@@ -570,6 +570,29 @@ now in the database.
       correctly isolates just All Too Well (10 Minute Version), an
       invalid/missing `type` errors the same way the rest of the
       site does, no PHP errors in the dev server log.
+- [x] Added Favourite Songs — this project's first client-side
+      JavaScript (`backend/favorites.js`), chosen over PHP sessions
+      specifically to avoid cookies and keep the Privacy page's "no
+      cookies" claim true. Favourites are stored in `localStorage`
+      as `{song_id: title}`, nothing sent to a server.
+      A star toggle button (`favourite_toggle_html()` in
+      `helpers.php`) was added next to every song title on
+      `song.php`, `tracklist.php`, `search.php`, and `moods.php`
+      (still to do on `compare.php`, `compare_albums.php`,
+      `version.php` — see backlog). New `backend/favourites.php`
+      page lists everything starred, rendered entirely client-side,
+      with a `<noscript>` fallback explaining the feature needs JS.
+      `backend/scripts.php` is a new shared partial (parallel to
+      `footer.php`) that includes `favorites.js`, added to every
+      page with a star button.
+      Updated `privacy.php` to describe this concretely instead of
+      speaking hypothetically about future personalisation features.
+      Verified live: all touched pages return 200, the button
+      markup and `aria-pressed`/`aria-label` attributes render
+      correctly, `favorites.js` passes `node -c` syntax check and is
+      served at 200, no PHP errors in the dev server log. Actual
+      click-through/localStorage behavior wasn't tested in a real
+      browser this session — worth a manual click-test next time.
 
 ## Backlog / Ideas
 
@@ -652,9 +675,10 @@ pages are also done — see "Completed" above.
       new data needed.
 
 ### Personalisation
-- [ ] Favourite Songs — mark songs as favourites, see them on a
-      personal page, stored in the browser (no account). First real
-      use of `localStorage` in this project.
+*Favourite Songs* is done (core pages) — see "Completed" above. Still
+open: adding the star button to `compare.php`, `compare_albums.php`,
+and `version.php` too, and a real browser click-test of the
+favourites flow (only checked server-side output this session).
 - [ ] Personal Ratings — rate songs, see personal ratings, pairs
       naturally with the tournament feature. Same `localStorage`
       approach as Favourite Songs.

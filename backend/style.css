@@ -463,6 +463,27 @@ ol.plain-list li {
   }
 }
 
+/* --- Favourites --- */
+
+.favourite-toggle {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  padding: 0 0.2rem;
+  vertical-align: middle;
+}
+
+.favourite-toggle:hover {
+  color: var(--accent);
+}
+
+.favourite-toggle[aria-pressed="true"] {
+  color: var(--accent);
+}
+
 /* --- Catalogue Statistics --- */
 
 .stat-grid {

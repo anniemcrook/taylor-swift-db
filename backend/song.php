@@ -135,7 +135,7 @@ $currentNav = null;
 <body>
     <?php include __DIR__ . '/nav.php'; ?>
     <main id="main">
-        <h1><?= htmlspecialchars($song['title']) ?></h1>
+        <h1><?= htmlspecialchars($song['title']) ?> <?= favourite_toggle_html($songId, $song['title']) ?></h1>
 
         <?php if ($themes !== []): ?>
         <p class="tag muted">Themes: <?= htmlspecialchars(implode(', ', $themes)) ?></p>
@@ -211,5 +211,6 @@ $currentNav = null;
         <?php endif; ?>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>
+    <?php include __DIR__ . '/scripts.php'; ?>
 </body>
 </html>

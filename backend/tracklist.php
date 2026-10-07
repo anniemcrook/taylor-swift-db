@@ -124,6 +124,7 @@ $currentNav = null;
                     <td><?= htmlspecialchars($track['track_number']) ?></td>
                     <td>
                         <a href="song.php?song_id=<?= (int) $track['song_id'] ?>"><?= htmlspecialchars($track['title']) ?></a>
+                        <?= favourite_toggle_html((int) $track['song_id'], $track['title']) ?>
                         <?php if ($track['recording_count'] > 1): ?>
                         <a href="compare.php?song_id=<?= (int) $track['song_id'] ?>">(compare versions)</a>
                         <?php endif; ?>
@@ -148,5 +149,6 @@ $currentNav = null;
         </div>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>
+    <?php include __DIR__ . '/scripts.php'; ?>
 </body>
 </html>
