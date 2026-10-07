@@ -472,12 +472,24 @@ now in the database.
       per-song content in the database, and spot-checked live via
       `moods.php` (a tenderness-only search correctly surfaces
       "Robin").
-
-## Backlog / Ideas
-
-- [ ] Continue the themes/moods rollout to the final album: The
-      Life of a Showgirl (everything else done, Fearless as the
-      trial).
+- [x] Themes rollout, era 11 of 11 (final album): The Life of a
+      Showgirl. No Taylor's Version (brand new release), one
+      recording per song, 16 songs. Seed data:
+      `sql/themes_showgirl.sql`. Added 9 new tags (148 total), 48
+      new `recording_themes` rows (951 total). Verified counts and
+      per-song content in the database, and spot-checked live via
+      `moods.php` (a euphoria-only search correctly surfaces "Pink
+      Clouding").
+      **Full-catalog themes rollout complete.** Confirmed with a
+      final sweep: every song in the database has at least one
+      recording carrying at least one theme tag (query returned zero
+      untagged songs). 148 free-form tags across 951
+      `recording_themes` rows, spanning all 16 albums/trial run.
+      Standing caveat still applies to the whole feature: themes are
+      my own reading of each song, not sourced from Wikipedia or any
+      other authority like the rest of this database — treat them as
+      a considered first draft, not ground truth, and especially so
+      for The Life of a Showgirl given how recent it is.
 
 - [ ] Add official lyric videos as a fallback for songs that only
       have a lyric video and no full music video (currently they show
