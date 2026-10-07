@@ -403,12 +403,25 @@ now in the database.
       per-song content in the database, and spot-checked live via
       `moods.php` (heartbreak+nostalgia correctly surfaces Last Kiss
       and Timeless alongside earlier-era matches).
+- [x] Themes rollout, album 3 of 15: Red + Red (Taylor's Version).
+      19 songs shared between both versions, 9 vault tracks TV-only.
+      Special case: All Too Well (10 Minute Version) is tagged
+      *separately* from the standard-length recordings — the exact
+      scenario the per-recording (not per-song) design was meant
+      for, since the extended cut's extra verses read noticeably
+      more specific/cathartic than the 4-minute version. Seed data:
+      `sql/themes_red.sql`. Added 21 new tags (89 total), 147 new
+      `recording_themes` rows (432 total). Verified counts, the
+      All Too Well special case, and live via `moods.php` (a
+      catharsis-only search correctly surfaces All Too Well with a
+      "(compare versions)" link, even though only the 10-minute
+      recording carries that tag).
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the remaining 13
-      albums/eras (debut and Speak Now done; Fearless done as the
-      trial): Red + TV, 1989 + TV, reputation, Lover, folklore, evermore,
+- [ ] Continue the themes/moods rollout to the remaining 12
+      albums/eras (debut, Speak Now, and Red done; Fearless done as
+      the trial): 1989 + TV, reputation, Lover, folklore, evermore,
       Midnights, The Tortured Poets Department, The Life of a
       Showgirl (+ The Encore).
 
