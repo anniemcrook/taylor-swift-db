@@ -430,12 +430,19 @@ now in the database.
       per-song content in the database, and spot-checked live via
       `moods.php` (a devotion-only search correctly surfaces "New
       Year's Day").
+- [x] Themes rollout, album 6 of 15: Lover. No Taylor's Version yet,
+      so one recording per song, 18 songs. Seed data:
+      `sql/themes_lover.sql`. Added 3 new tags (106 total), 54 new
+      `recording_themes` rows (642 total). Verified counts and
+      per-song content in the database, and spot-checked live via
+      `moods.php` (an empowerment-only search correctly surfaces
+      "The Man").
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the remaining 10
-      albums/eras (debut, Speak Now, Red, 1989, and reputation done;
-      Fearless done as the trial): Lover, folklore, evermore,
+- [ ] Continue the themes/moods rollout to the remaining 9
+      albums/eras (debut, Speak Now, Red, 1989, reputation, and
+      Lover done; Fearless done as the trial): folklore, evermore,
       Midnights, The Tortured Poets Department, The Life of a
       Showgirl (+ The Encore).
 
