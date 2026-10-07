@@ -215,7 +215,7 @@ $currentNav = 'stats';
         <p class="muted"><?= $collaboratorCount ?> different outside songwriters and producers have worked on this catalogue. Most frequent:</p>
         <ul class="plain-list">
             <?php foreach ($topCollaborators as $collaborator): ?>
-            <li><?= htmlspecialchars($collaborator['name']) ?> <span class="tag muted">(<?= (int) $collaborator['song_count'] ?> songs)</span></li>
+            <li><a href="search.php?q=<?= urlencode($collaborator['name']) ?>"><?= htmlspecialchars($collaborator['name']) ?></a> <span class="tag muted">(<?= (int) $collaborator['song_count'] ?> songs)</span></li>
             <?php endforeach; ?>
         </ul>
 
@@ -233,7 +233,7 @@ $currentNav = 'stats';
         <h2>Versions &amp; editions</h2>
         <ul class="plain-list">
             <?php foreach ($versionTypes as $vt): ?>
-            <li><?= htmlspecialchars(format_version_type($vt['version_type'])) ?> <span class="tag muted">(<?= (int) $vt['cnt'] ?>)</span></li>
+            <li><a href="version.php?type=<?= urlencode($vt['version_type']) ?>"><?= htmlspecialchars(format_version_type($vt['version_type'])) ?></a> <span class="tag muted">(<?= (int) $vt['cnt'] ?>)</span></li>
             <?php endforeach; ?>
         </ul>
     </main>

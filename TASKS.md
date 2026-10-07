@@ -559,6 +559,17 @@ now in the database.
       **This completes all three items the user picked from the
       feature backlog, in order: documentation pages, Song
       Recommendations, Catalogue Statistics Dashboard.**
+- [x] Made the Stats page's Collaborations and Versions & editions
+      lists clickable, per user follow-up request. Collaborator
+      names link to `search.php?q=<name>`, reusing the existing
+      songwriter/producer name search as-is — no changes needed
+      there. Version types link to a new `backend/version.php?type=X`
+      page listing every recording of that type (song, album,
+      duration), each song linking into `song.php`. Verified live:
+      "original" correctly lists all 218 recordings, "other"
+      correctly isolates just All Too Well (10 Minute Version), an
+      invalid/missing `type` errors the same way the rest of the
+      site does, no PHP errors in the dev server log.
 
 ## Backlog / Ideas
 
