@@ -444,12 +444,19 @@ now in the database.
       per-song content in the database, and spot-checked live via
       `moods.php` (a tranquility-only search correctly surfaces
       "the lakes").
+- [x] Themes rollout, album 8 of 15: evermore. No Taylor's Version
+      yet, so one recording per song, 17 songs. Seed data:
+      `sql/themes_evermore.sql`. Added 5 new tags (122 total), 51
+      new `recording_themes` rows (744 total). Verified counts and
+      per-song content in the database, and spot-checked live via
+      `moods.php` (a letting-go-only search correctly surfaces
+      "it's time to go").
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the remaining 8
+- [ ] Continue the themes/moods rollout to the remaining 7
       albums/eras (debut, Speak Now, Red, 1989, reputation, Lover,
-      and folklore done; Fearless done as the trial): evermore,
+      folklore, and evermore done; Fearless done as the trial):
       Midnights, The Tortured Poets Department, The Life of a
       Showgirl (+ The Encore).
 
