@@ -121,7 +121,7 @@ $currentNav = 'moods';
             <?php foreach ($playlist as $song): ?>
             <?php $rep = $song['representative']; ?>
             <li>
-                <strong><?= htmlspecialchars($song['song_title']) ?></strong>
+                <a href="song.php?song_id=<?= (int) $song['song_id'] ?>"><strong><?= htmlspecialchars($song['song_title']) ?></strong></a>
                 <?php if ($song['recording_count'] > 1): ?>
                 <a href="compare.php?song_id=<?= (int) $song['song_id'] ?>">(compare versions)</a>
                 <?php endif; ?>

@@ -117,7 +117,7 @@ function render_album_column(array $album, array $sharedSongIds, ?string $artwor
                 <tr class="<?= $isShared ? 'shared-row' : '' ?>">
                     <td><?= htmlspecialchars($track['track_number']) ?></td>
                     <td>
-                        <?= htmlspecialchars($track['title']) ?>
+                        <a href="song.php?song_id=<?= (int) $songId ?>"><?= htmlspecialchars($track['title']) ?></a>
                         <?php if ($isShared): ?>
                         <span class="tag muted">(shared)</span>
                         <?php endif; ?>

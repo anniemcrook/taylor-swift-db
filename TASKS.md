@@ -512,6 +512,30 @@ now in the database.
       site-header pattern. Verified live: all 4 pages return 200,
       the footer renders exactly once on every existing page, no
       PHP errors in the dev server log.
+- [x] Built Song Recommendations (second item from the user-proposed
+      feature backlog), which needed a new song detail page first —
+      `backend/song.php?song_id=X` — since songs previously only
+      appeared embedded in `tracklist.php` rows or `compare.php`.
+      The page shows a song's themes, every recording (version,
+      album, duration, credits, music video), a link to
+      `compare.php` when there's more than one recording, and a
+      "Similar songs" section: other songs sharing at least one
+      theme, ranked by how many themes they share (ties broken
+      alphabetically), each showing exactly which themes are shared
+      — directly reusing the `recording_themes` data from the
+      themes rollout, no new schema needed. Matching is done at the
+      song level (any recording vs. any recording), same approach
+      as the Moods playlist, so an original/Taylor's Version pair
+      doesn't inflate its own shared-theme count.
+      Wired up links to the new page from every place a song title
+      already appears: `tracklist.php`, `search.php`, `moods.php`,
+      and `compare_albums.php`.
+      Verified live: "All Too Well" correctly ranks "Babe" above
+      "Bad Blood" (3 shared themes vs. 2) with the right theme names
+      listed for each; a song with no themes shows an explanatory
+      message instead of an empty "Similar songs" section; invalid/
+      missing `song_id` both error the same way the rest of the site
+      does; no PHP errors in the dev server log.
 
 ## Backlog / Ideas
 
@@ -523,17 +547,19 @@ now in the database.
 
 ## Feature backlog (user-proposed, 2026-10-07)
 
-User came up with a broad list of possible next features. Recommended
-starting point — **Song Recommendations** — is being discussed
-separately; everything else (including the parts of that list not
-picked yet) is logged here for later. Feasibility notes reflect the
-current stack: plain PHP/PDO + MySQL, no JS anywhere yet, no user
-accounts, no framework.
+User came up with a broad list of possible next features and picked
+an order to tackle three of them: (1) documentation pages, (2) Song
+Recommendations, (3) Catalogue Statistics Dashboard — see the
+"Completed" section above for each as they're finished. Everything
+else on the original list (including parts not picked yet) is logged
+here for later. Feasibility notes reflect the current stack: plain
+PHP/PDO + MySQL, no JS anywhere yet, no user accounts, no framework.
 
 Already done, not backlog: *Official Music Video Links* (item 14) —
 `tracklist.php` already links every recording's video where one
 exists, falling back to another version's video when a bonus/vault
-track borrows one.
+track borrows one. *Song Recommendations* and the 4 documentation
+pages are also done — see "Completed" above.
 
 ### Core interactive features
 - [ ] Favourite Song Tournament — pairwise "pick one" bracket across
@@ -547,12 +573,6 @@ track borrows one.
       it, see it rendered as an album-style card. Picking/naming/
       capping is plain forms; drag-and-drop reordering is this
       project's first real case for client-side JS.
-- [ ] Song Recommendations — on a song's page, show others with
-      overlapping themes/moods and explain why. Directly reuses the
-      `recording_themes` data just finished rolling out across the
-      whole catalogue — low new-data cost. Needs a dedicated song
-      detail page first (today songs only appear embedded in
-      `tracklist.php` rows or `compare.php`, there's no `song.php`).
 
 ### Data & statistics
 - [ ] Catalogue Statistics Dashboard — totals, per-album breakdowns,
@@ -589,9 +609,9 @@ track borrows one.
       random tracklist or song. Trivial: `ORDER BY RAND() LIMIT 1`
       (or an app-level random pick) plus a redirect.
 - [ ] Song Connections — surface shared themes/moods/album/writers
-      between songs. Same underlying data as Song Recommendations;
-      likely the same feature looked at from a "show me the web of
-      connections" angle rather than "show me similar songs."
+      between songs, beyond the theme-only similarity that Song
+      Recommendations (now on `song.php`) already covers — e.g.
+      shared writers/producers, or same-album relationships.
 
 ### External media
 - [ ] Music Video Explorer — a dedicated page listing every song

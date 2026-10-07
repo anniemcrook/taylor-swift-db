@@ -123,7 +123,7 @@ $currentNav = null;
                 <tr>
                     <td><?= htmlspecialchars($track['track_number']) ?></td>
                     <td>
-                        <?= htmlspecialchars($track['title']) ?>
+                        <a href="song.php?song_id=<?= (int) $track['song_id'] ?>"><?= htmlspecialchars($track['title']) ?></a>
                         <?php if ($track['recording_count'] > 1): ?>
                         <a href="compare.php?song_id=<?= (int) $track['song_id'] ?>">(compare versions)</a>
                         <?php endif; ?>

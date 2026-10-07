@@ -94,7 +94,7 @@ $currentNav = 'search';
             <?php foreach ($results as $song): ?>
             <div class="result-card">
                 <h3>
-                    <?= htmlspecialchars($song['title']) ?>
+                    <a href="song.php?song_id=<?= (int) $song['song_id'] ?>"><?= htmlspecialchars($song['title']) ?></a>
                     <?php if ($song['recording_count'] > 1): ?>
                     <a href="compare.php?song_id=<?= (int) $song['song_id'] ?>">(compare versions)</a>
                     <?php endif; ?>
