@@ -394,12 +394,21 @@ now in the database.
       database, and spot-checked live via `moods.php` (nostalgia
       search correctly includes Tim McGraw, Mary's Song, Our Song
       alongside the Fearless-era matches).
+- [x] Themes rollout, album 2 of 15: Speak Now + Speak Now (Taylor's
+      Version). 16 songs shared between both versions, "If This Was
+      a Movie" original-only (never re-recorded for TV), 6 vault
+      tracks TV-only — 39 recordings tagged. Seed data:
+      `sql/themes_speaknow.sql`. Added 19 new tags (68 total), 117
+      new `recording_themes` rows (285 total). Verified counts and
+      per-song content in the database, and spot-checked live via
+      `moods.php` (heartbreak+nostalgia correctly surfaces Last Kiss
+      and Timeless alongside earlier-era matches).
 
 ## Backlog / Ideas
 
-- [ ] Continue the themes/moods rollout to the remaining 14
-      albums/eras (debut done; Fearless done as the trial): Speak Now
-      + TV, Red + TV, 1989 + TV, reputation, Lover, folklore, evermore,
+- [ ] Continue the themes/moods rollout to the remaining 13
+      albums/eras (debut and Speak Now done; Fearless done as the
+      trial): Red + TV, 1989 + TV, reputation, Lover, folklore, evermore,
       Midnights, The Tortured Poets Department, The Life of a
       Showgirl (+ The Encore).
 
