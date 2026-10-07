@@ -24,11 +24,11 @@ $currentNav = null;
 
         <h2>Who owns this artwork</h2>
         <p>
-            Album cover art is copyrighted by the respective record
-            label (Big Machine Records for the original albums through
-            <em>reputation</em>, or Republic Records/Universal Music
-            Group for <em>Lover</em> onward and the Taylor's Version
-            re-recordings) and/or the artist. It is <strong>not</strong>
+            Album cover art is copyrighted by Taylor Swift and/or her
+            label, Republic Records — as of 2025 she owns the masters
+            and artwork for her entire catalogue, including the
+            original albums through <em>reputation</em> that were once
+            held by Big Machine Records. It is <strong>not</strong>
             under an open or reusable licence — it's used here solely
             to visually identify each album on an unofficial,
             non-commercial fan catalogue, the same way a music store
