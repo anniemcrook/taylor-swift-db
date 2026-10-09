@@ -645,29 +645,48 @@ now in the database.
       nothing) — user's idea, explicitly deferred to later.
 - [ ] Add any albums/bonus tracks released after *The Life of a
       Showgirl: The Encore* (Sept 2026) if and when they exist.
-- [ ] Add non-album singles/soundtrack songs — currently the
-      catalogue has zero songs of `album_type` 'single' or
-      'soundtrack' even though the schema already supports both.
-      User flagged this is missing. Confirmed via web search
-      (2026-10-09): **"Carolina"** (Where the Crawdads Sing, 2022 —
-      written solely by Taylor Swift, produced by Swift and Aaron
-      Dessner, 4:24, released via Republic Records June 24, 2022 —
-      [Rolling Stone](https://www.rollingstone.com/music/music-news/taylor-swift-carolina-new-song-where-the-crawdads-sing-1325032/),
-      [Wikipedia](https://en.wikipedia.org/wiki/Carolina_(Taylor_Swift_song)))
-      and **"I Knew It, I Knew You"** (Toy Story 5, 2026 — written
-      and produced by Swift and Jack Antonoff, tied to Jessie's
-      story —
-      [TheWrap](https://www.thewrap.com/creative-content/music/taylor-swift-new-toy-story-5-song-title/))
-      both exist and aren't in the catalogue yet; still need an
-      exact release date and duration for the Toy Story 5 song.
-      User mentioned "etc" — there may be more (e.g. "Crazier",
-      "Safe & Sound", "Eyes Open", "Beautiful Ghosts", "Sweeter
-      than Fiction", "Christmas Tree Farm", "Only the Young" are
-      other known standalone Taylor Swift singles/soundtrack songs,
-      none confirmed as wanted and none currently in the catalogue
-      either) — **waiting on the user's full list before writing
-      any seed SQL**, same verify-before-adding standard as the
-      rest of the catalogue.
+- [x] Added all 9 non-album singles/soundtrack songs the user asked
+      for: **Crazier** (Hannah Montana: The Movie, 2009),
+      **Safe & Sound** (The Hunger Games, 2011, with The Civil
+      Wars), **Eyes Open** (The Hunger Games, 2012),
+      **Sweeter than Fiction** (One Chance, 2013),
+      **Beautiful Ghosts** (Cats, 2019, with Andrew Lloyd Webber),
+      **Christmas Tree Farm** (standalone holiday single, 2019),
+      **Only the Young** (Miss Americana, 2020),
+      **Carolina** (Where the Crawdads Sing, 2022), and
+      **I Knew It, I Knew You** (Toy Story 5, 2026). Every
+      songwriter/producer credit and duration was verified via web
+      search across multiple sources first (Wikipedia plus news
+      coverage), same standard as the rest of the catalogue — see
+      `sql/nonalbum_singles.sql` for full sourcing notes.
+      Schema needed no changes: `albums.album_type` already had
+      'single' and 'soundtrack' as options, unused until now. Each
+      song got its own one-track "album" row (matches how streaming
+      services list a standalone single).
+      7 new artists added (T Bone Burnett, Joy Williams, John Paul
+      White, Andrew Lloyd Webber, Greg Wells, Tom Hooper, Jimmy
+      Napes) — `artists.name` has no UNIQUE constraint (the same gap
+      that caused the earlier Sounwave duplicate-artist bug), so
+      each was inserted with an explicit `NOT EXISTS` guard rather
+      than relying on a constraint that isn't there.
+      **Found and fixed a real bug this surfaced**: `index.php`'s
+      homepage grid listed every row in `albums` with no filter, so
+      these 9 one-song singles started appearing interleaved with
+      real studio albums on a page titled "Albums." Filtered the
+      main grid to `album_type NOT IN ('single', 'soundtrack')` and
+      added a separate "Non-album singles & soundtrack songs" list
+      below it, linking each one straight to its `song.php` page.
+      Verified live: all 9 songs, their credits, and their
+      durations match the research; `artists` has zero duplicates;
+      totals moved from 16→25 albums, 245→254 songs, 325→334
+      recordings, 76→83 outside collaborators (exactly the 7 new
+      artists) on `stats.php`; the iTunes artwork lookup worked
+      automatically for the new "albums" with no code changes;
+      homepage correctly shows 16 real albums plus the new singles
+      list; no PHP errors in the dev server log.
+      Not yet done: themes/moods tags and music-video verification
+      for these 9 songs (left untagged/unlinked for now, consistent
+      with being honest about what's actually been checked).
 
 ## Feature backlog (user-proposed, 2026-10-07)
 
