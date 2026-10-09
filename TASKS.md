@@ -721,6 +721,41 @@ now in the database.
       homepage's lightweight icon+cover view doesn't attempt. Leaning
       toward keeping both unless the user still wants it gone after
       seeing the new homepage.
+- [x] Added Undo and per-album win statistics to the Tournament, per
+      user request (hit a misclick mid-run and wanted a safety net,
+      plus curiosity about which album "wins" the most overall).
+      Undo is a full multi-level stack, not just one step back:
+      `pick()` now pushes a JSON-cloned snapshot of the pre-pick
+      state onto `state.history` before mutating anything, and
+      "Undo last pick" just pops and restores the most recent one —
+      chosen over manually reversing each mutation because round
+      transitions (the queue/winners reset that happens when a
+      round completes) are easy to get subtly wrong by hand; a full
+      snapshot restore can't be wrong in that way. Verified the
+      approach with a standalone Node simulation: a misclick
+      followed by undo-and-correct produces an identical champion
+      and pick count to a clean run; also verified 2 consecutive
+      undos and undoing the final championship-deciding pick both
+      restore exactly the expected prior state.
+      Win statistics: `tournament.php`'s song query now also
+      fetches each song's representative album (same "prefer
+      original, earliest release" pattern as `moods.php`/
+      `song.php`). `pick()` increments a `wins` counter per
+      song_id (byes don't count as a win, matching real bracket
+      semantics). The results screen now shows every album's total
+      wins across its songs, most-to-least, explicitly calling out
+      the highest and lowest — including albums whose songs lost
+      every match they played, so "fewest winners" has a real
+      answer instead of only covering albums with at least one win.
+      Both features are backward-compatible with the tournament the
+      user already has in progress: old saved state is missing the
+      new `history`/`wins` fields, which just default to empty on
+      load, so it resumes correctly — undo and the album stats only
+      cover picks made from this update onward, which was explained
+      to the user rather than silently assumed.
+      Verified live: page and script both return 200, `tournament.js`
+      passes `node -c`, the embedded song list now includes each
+      song's album, no PHP errors in the dev server log.
 
 ## Backlog / Ideas
 

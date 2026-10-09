@@ -9,7 +9,22 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 
-$songStmt = $pdo->query("SELECT song_id, title FROM songs ORDER BY song_id");
+// Each song's representative album (preferring the original
+// version, earliest release) — used to credit tournament wins back
+// to an album for the results-screen statistics. Same "pick one
+// representative recording" pattern as moods.php and song.php.
+$songStmt = $pdo->query("
+    SELECT s.song_id, s.title,
+        (SELECT al.title
+            FROM recordings r
+            LEFT JOIN album_tracks at ON at.recording_id = r.recording_id
+            LEFT JOIN albums al ON al.album_id = at.album_id
+            WHERE r.song_id = s.song_id
+            ORDER BY (r.version_type = 'original') DESC, al.release_date, at.track_number
+            LIMIT 1) AS album
+    FROM songs s
+    ORDER BY s.song_id
+");
 $songs = $songStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $pageTitle = 'Favourite Song Tournament — Taylor Swift Catalogue';

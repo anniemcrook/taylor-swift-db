@@ -546,8 +546,13 @@ ol.plain-list li {
   margin: 0.5rem 0 1.5rem;
 }
 
-.tournament-reset {
+.tournament-actions {
+  display: flex;
+  gap: 0.75rem;
   margin-top: 1.5rem;
+}
+
+.tournament-reset {
   padding: 0.6rem 1.2rem;
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -561,6 +566,16 @@ ol.plain-list li {
 .tournament-reset:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.tournament-reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tournament-reset:disabled:hover {
+  border-color: var(--border);
+  color: var(--text);
 }
 
 @media (max-width: 600px) {
