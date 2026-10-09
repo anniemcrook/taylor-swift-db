@@ -52,6 +52,7 @@ $currentNav = 'stats';
             <?php foreach ($recordings as $recording): ?>
             <li>
                 <a href="song.php?song_id=<?= (int) $recording['song_id'] ?>"><strong><?= htmlspecialchars($recording['title']) ?></strong></a>
+                <?= favourite_toggle_html((int) $recording['song_id'], $recording['title']) ?>
                 <?php if ($recording['album_id']): ?>
                 — <a href="tracklist.php?album_id=<?= (int) $recording['album_id'] ?>"><?= htmlspecialchars($recording['album_title']) ?></a>
                 <?php endif; ?>
@@ -63,5 +64,6 @@ $currentNav = 'stats';
         </ul>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>
+    <?php include __DIR__ . '/scripts.php'; ?>
 </body>
 </html>

@@ -1,6 +1,7 @@
 <?php
 // --- Database connection ---
 require __DIR__ . '/config.php';
+require __DIR__ . '/helpers.php';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
@@ -89,12 +90,13 @@ $currentNav = 'compare';
                 <a href="compare.php?song_id=<?= (int) $s['song_id'] ?>">
                     <?= htmlspecialchars($s['title']) ?>
                 </a>
+                <?= favourite_toggle_html((int) $s['song_id'], $s['title']) ?>
                 <span class="tag">(<?= (int) $s['recording_count'] ?> recordings)</span>
             </li>
             <?php endforeach; ?>
         </ul>
     <?php else: ?>
-        <h1><?= htmlspecialchars($song['title']) ?> — Version Comparison</h1>
+        <h1><?= htmlspecialchars($song['title']) ?> <?= favourite_toggle_html($songId, $song['title']) ?> — Version Comparison</h1>
         <div class="table-wrap">
             <table>
                 <caption class="visually-hidden"><?= htmlspecialchars($song['title']) ?> version comparison</caption>
@@ -127,5 +129,6 @@ $currentNav = 'compare';
     <?php endif; ?>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>
+    <?php include __DIR__ . '/scripts.php'; ?>
 </body>
 </html>

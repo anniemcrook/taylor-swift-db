@@ -593,6 +593,19 @@ now in the database.
       served at 200, no PHP errors in the dev server log. Actual
       click-through/localStorage behavior wasn't tested in a real
       browser this session — worth a manual click-test next time.
+- [x] User confirmed the real-browser click-test: favourites set
+      last session were still present at the start of this one.
+      Added the remaining star buttons for full site coverage:
+      `compare.php` (both the song-list view and the per-song
+      version-comparison view), `compare_albums.php` (per-track in
+      each album's tracklist), and `version.php` (per-recording in
+      the by-version-type list). All three needed `require
+      __DIR__ . '/helpers.php'` added (only `version.php` already
+      had it) and `scripts.php` included after the footer. Verified
+      live: all four page variants return 200, the button markup
+      and `favorites.js` include both render correctly, no PHP
+      errors in the dev server log. Favourite Songs now has a star
+      next to every song title anywhere on the site.
 
 ## Backlog / Ideas
 
@@ -675,10 +688,10 @@ pages are also done — see "Completed" above.
       new data needed.
 
 ### Personalisation
-*Favourite Songs* is done (core pages) — see "Completed" above. Still
-open: adding the star button to `compare.php`, `compare_albums.php`,
-and `version.php` too, and a real browser click-test of the
-favourites flow (only checked server-side output this session).
+*Favourite Songs* is done, including the star button on every page
+that shows a song title — see "Completed" above. User confirmed the
+real-browser click-test too: favourites set in one session were
+still there at the start of the next.
 - [ ] Personal Ratings — rate songs, see personal ratings, pairs
       naturally with the tournament feature. Same `localStorage`
       approach as Favourite Songs.

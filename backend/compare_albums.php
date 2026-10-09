@@ -2,6 +2,7 @@
 // --- Database connection ---
 require __DIR__ . '/config.php';
 require __DIR__ . '/artwork.php';
+require __DIR__ . '/helpers.php';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
@@ -118,6 +119,7 @@ function render_album_column(array $album, array $sharedSongIds, ?string $artwor
                     <td><?= htmlspecialchars($track['track_number']) ?></td>
                     <td>
                         <a href="song.php?song_id=<?= (int) $songId ?>"><?= htmlspecialchars($track['title']) ?></a>
+                        <?= favourite_toggle_html((int) $songId, $track['title']) ?>
                         <?php if ($isShared): ?>
                         <span class="tag muted">(shared)</span>
                         <?php endif; ?>
@@ -187,5 +189,6 @@ $currentNav = 'compare_albums';
         <?php endif; ?>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>
+    <?php include __DIR__ . '/scripts.php'; ?>
 </body>
 </html>
