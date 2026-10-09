@@ -10,23 +10,42 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 
-$stmt = $pdo->query("
-    SELECT album_id, title FROM albums
-    WHERE album_type NOT IN ('single', 'soundtrack')
-    ORDER BY release_date
+// Eras group a studio album with its Taylor's Version re-recording
+// as one unit — the grouping that actually matters to fans, rather
+// than listing all 16 album rows flat. Ordered by each era's
+// earliest release (the original album), with the original before
+// its re-recording within the era.
+$eraStmt = $pdo->query("
+    SELECT e.era_id, e.name AS era_name, e.icon,
+           al.album_id, al.title AS album_title, al.album_type, al.release_date
+    FROM eras e
+    JOIN albums al ON al.era_id = e.era_id
+    ORDER BY (SELECT MIN(a2.release_date) FROM albums a2 WHERE a2.era_id = e.era_id), al.release_date
 ");
-$albums = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$eraRows = $eraStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Non-album singles and soundtrack songs get their own small list
-// further down rather than cluttering the main album grid — each is
-// just a one-track "album" row, not a real album.
+$eras = [];
+foreach ($eraRows as $row) {
+    $eraId = (int) $row['era_id'];
+    if (!isset($eras[$eraId])) {
+        $eras[$eraId] = [
+            'name' => $row['era_name'],
+            'icon' => $row['icon'],
+            'albums' => [],
+        ];
+    }
+    $eras[$eraId]['albums'][] = $row;
+}
+
+// Non-album singles and soundtrack songs don't belong to any era —
+// they get their own small list further down.
 $singlesStmt = $pdo->query("
     SELECT al.album_id, al.title, s.song_id
     FROM albums al
     JOIN album_tracks at ON at.album_id = al.album_id
     JOIN recordings r ON r.recording_id = at.recording_id
     JOIN songs s ON s.song_id = r.song_id
-    WHERE al.album_type IN ('single', 'soundtrack')
+    WHERE al.era_id IS NULL
     ORDER BY al.release_date
 ");
 $singles = $singlesStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -42,26 +61,36 @@ $currentNav = 'home';
 <body>
     <?php include __DIR__ . '/nav.php'; ?>
     <main id="main">
-        <h1>Albums</h1>
-        <ul class="album-grid">
-            <?php foreach ($albums as $album): ?>
-            <?php $artwork = get_album_artwork($pdo, (int) $album['album_id'], $album['title']); ?>
-            <li>
-                <a class="album-card" href="tracklist.php?album_id=<?= (int) $album['album_id'] ?>">
-                    <?php if ($artwork): ?>
-                    <img class="cover" src="<?= htmlspecialchars($artwork) ?>" width="150" height="150" alt="<?= htmlspecialchars($album['title']) ?> cover art">
-                    <?php else: ?>
-                    <span class="cover placeholder" aria-hidden="true">No artwork</span>
-                    <?php endif; ?>
-                    <span class="title"><?= htmlspecialchars($album['title']) ?></span>
-                </a>
+        <h1>Eras</h1>
+        <ul class="era-grid">
+            <?php foreach ($eras as $era): ?>
+            <li class="era-card">
+                <div class="era-header">
+                    <span class="era-icon" aria-hidden="true"><?= htmlspecialchars($era['icon'] ?? '') ?></span>
+                    <span class="era-name"><?= htmlspecialchars($era['name']) ?></span>
+                </div>
+                <div class="era-albums">
+                    <?php foreach ($era['albums'] as $album): ?>
+                    <?php $artwork = get_album_artwork($pdo, (int) $album['album_id'], $album['album_title']); ?>
+                    <a class="era-album" href="tracklist.php?album_id=<?= (int) $album['album_id'] ?>">
+                        <?php if ($artwork): ?>
+                        <img class="cover" src="<?= htmlspecialchars($artwork) ?>" width="120" height="120" alt="<?= htmlspecialchars($album['album_title']) ?> cover art">
+                        <?php else: ?>
+                        <span class="cover placeholder" aria-hidden="true">No artwork</span>
+                        <?php endif; ?>
+                        <?php if (count($era['albums']) > 1): ?>
+                        <span class="era-album-label"><?= $album['album_type'] === 'taylors_version' ? "Taylor's Version" : 'Original' ?></span>
+                        <?php endif; ?>
+                    </a>
+                    <?php endforeach; ?>
+                </div>
             </li>
             <?php endforeach; ?>
         </ul>
 
         <?php if ($singles !== []): ?>
         <h2>Non-album singles &amp; soundtrack songs</h2>
-        <p class="muted">Standalone releases that were never part of a numbered studio album.</p>
+        <p class="muted">Standalone releases that were never part of a numbered studio album, so they don't belong to any era.</p>
         <ul class="plain-list">
             <?php foreach ($singles as $single): ?>
             <li><a href="song.php?song_id=<?= (int) $single['song_id'] ?>"><?= htmlspecialchars($single['title']) ?></a></li>

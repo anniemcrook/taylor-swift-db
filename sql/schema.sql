@@ -4,11 +4,12 @@
 --   1. CREATE DATABASE taylor_swift_db;
 --   2. mysql taylor_swift_db < sql/schema.sql
 --      This already includes everything sql/0001_add_album_tracks_edition.sql,
---      sql/0002_add_recordings_music_video_url.sql, and
---      sql/0003_add_themes.sql — those files are kept only as a
---      historical record of when each change was introduced; don't
---      run them against a database built from this file, or you'll
---      get a "duplicate column"/"table already exists" error.
+--      sql/0002_add_recordings_music_video_url.sql,
+--      sql/0003_add_themes.sql, and sql/0004_add_eras.sql — those
+--      files are kept only as a historical record of when each
+--      change was introduced; don't run them against a database
+--      built from this file, or you'll get a "duplicate column"/
+--      "table already exists" error.
 --   3. mysql taylor_swift_db < sql/0000_core_artists.sql
 --      Bootstraps Taylor Swift, Max Martin, Shellback, and Nathan
 --      Chapman — the only artists no dated seed file ever inserts
@@ -21,7 +22,9 @@
 --      any previous run — except that each file does assume the
 --      artists it looks up (rather than inserts fresh) already exist,
 --      so the relative order matters. Every sql/music_videos_*.sql
---      file must run after its corresponding album data.
+--      file must run after its corresponding album data, and
+--      sql/eras_seed.sql must run after every dated catalog file
+--      (it looks up every studio/Taylor's Version album by title).
 --
 -- Design notes:
 --   - `songs` is the composition (one row per song, regardless of how
@@ -34,6 +37,12 @@
 --     albums/tracklists. `album_tracks.edition` tags a track as
 --     belonging to a bonus tier (e.g. 'Deluxe Edition', 'From the
 --     Vault') without needing a separate album row per edition.
+--   - `eras` groups a studio album with its Taylor's Version
+--     re-recording as one unit (e.g. "1989" and "1989 (Taylor's
+--     Version)" are both the 1989 era) — the grouping that actually
+--     matters to Taylor Swift and her fans, distinct from the
+--     album-level `album_type`. `albums.era_id` is nullable since
+--     standalone singles/soundtrack songs don't belong to any era.
 --   - `artists` + the two junction tables credit songwriters and
 --     producers per recording (not per song — credits can differ
 --     between the original and a re-recording).
@@ -51,6 +60,7 @@ DROP TABLE IF EXISTS `recording_songwriters`;
 DROP TABLE IF EXISTS `album_tracks`;
 DROP TABLE IF EXISTS `recordings`;
 DROP TABLE IF EXISTS `albums`;
+DROP TABLE IF EXISTS `eras`;
 DROP TABLE IF EXISTS `songs`;
 DROP TABLE IF EXISTS `artists`;
 
@@ -67,13 +77,24 @@ CREATE TABLE `songs` (
   PRIMARY KEY (`song_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+CREATE TABLE `eras` (
+  `era_id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `icon` varchar(10) DEFAULT NULL,
+  PRIMARY KEY (`era_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE `albums` (
   `album_id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `release_date` date DEFAULT NULL,
   `album_type` enum('studio','deluxe','taylors_version','single','soundtrack','live','other') DEFAULT NULL,
+  `era_id` int DEFAULT NULL,
   `cover_url` varchar(500) DEFAULT NULL,
-  PRIMARY KEY (`album_id`)
+  PRIMARY KEY (`album_id`),
+  KEY `era_id` (`era_id`),
+  CONSTRAINT `albums_ibfk_era` FOREIGN KEY (`era_id`) REFERENCES `eras` (`era_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `recordings` (

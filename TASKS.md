@@ -638,13 +638,6 @@ now in the database.
       a real browser** — that's the natural next check now that the
       user is back at their laptop.
 
-## Backlog / Ideas
-
-- [ ] Add official lyric videos as a fallback for songs that only
-      have a lyric video and no full music video (currently they show
-      nothing) — user's idea, explicitly deferred to later.
-- [ ] Add any albums/bonus tracks released after *The Life of a
-      Showgirl: The Encore* (Sept 2026) if and when they exist.
 - [x] Added all 9 non-album singles/soundtrack songs the user asked
       for: **Crazier** (Hannah Montana: The Movie, 2009),
       **Safe & Sound** (The Hunger Games, 2011, with The Civil
@@ -687,6 +680,55 @@ now in the database.
       Not yet done: themes/moods tags and music-video verification
       for these 9 songs (left untagged/unlinked for now, consistent
       with being honest about what's actually been checked).
+- [x] Redesigned the homepage around **Eras** instead of a flat list
+      of 16 album rows, per user request — a studio album and its
+      Taylor's Version re-recording are the same era to fans, not
+      two separate things, and mixing eras up "feels wrong."
+      Real schema addition, not just a display change: new `eras`
+      table (`era_id`, `name`, `icon`) and a nullable `albums.era_id`
+      FK — migration `sql/0004_add_eras.sql` (schema only, same
+      pattern as 0001-0003), data + backfill in `sql/eras_seed.sql`
+      (run after the dated catalog files, same as any other seed
+      file). `schema.sql` updated to match, including the DROP/
+      CREATE order (`albums` must drop before `eras`, since it
+      holds the FK; `eras` must create before `albums`).
+      `icon` is the colored heart fans/Taylor Nation use per era on
+      social media — verified via web search after my first
+      instinct (an arbitrary emoji per era, e.g. 🐍 for reputation)
+      turned out to not be what the user meant. Corrected again
+      mid-build on user correction: The Life of a Showgirl uses the
+      "heart on fire" (❤️‍🔥) rather than a plain colored heart,
+      matching her own marketing account's usage.
+      `backend/index.php` rewritten: one card per era (icon + name),
+      with the original and Taylor's Version nested side-by-side
+      inside the same card when both exist, labeled "Original"/
+      "Taylor's Version"; single-album eras just show one cover,
+      unlabeled. Non-album singles section unchanged, now keyed off
+      `era_id IS NULL` instead of `album_type`.
+      `artists.name`-style duplicate risk doesn't apply here since
+      `eras.name` got a `UNIQUE` constraint from the start (learned
+      from both the Sounwave bug and the themes-table precedent).
+      Verified live: all 12 eras render in correct chronological
+      order (by each era's earliest album), icons match the
+      corrected list, original/TV pairs nest correctly under
+      Fearless/Speak Now/Red/1989, `eras_seed.sql` is idempotent on
+      re-run, no PHP errors in the dev server log.
+      **Open question for the user, not yet acted on**: whether this
+      replaces the need for the separate Compare Albums page. My
+      read: no — Compare Albums does full tracklist-level comparison
+      with shared-song highlighting between *any* two albums
+      (including across eras, e.g. Lover vs. Midnights), which the
+      homepage's lightweight icon+cover view doesn't attempt. Leaning
+      toward keeping both unless the user still wants it gone after
+      seeing the new homepage.
+
+## Backlog / Ideas
+
+- [ ] Add official lyric videos as a fallback for songs that only
+      have a lyric video and no full music video (currently they show
+      nothing) — user's idea, explicitly deferred to later.
+- [ ] Add any albums/bonus tracks released after *The Life of a
+      Showgirl: The Encore* (Sept 2026) if and when they exist.
 
 ## Feature backlog (user-proposed, 2026-10-07)
 
