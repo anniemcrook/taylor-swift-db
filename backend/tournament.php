@@ -31,9 +31,18 @@ $recordings = $recordingStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // The original recording keeps the bare song title; every other
 // version gets a plain-English suffix, e.g. "Style (Taylor's
-// Version)" or "All Too Well (Extended Version)".
+// Version)". One recording needs its exact real-world title rather
+// than the generic rule: the "All Too Well" 10-minute cut isn't
+// just "the extended version" to fans, it's specifically "All Too
+// Well (10 Minute Version) (Taylor's Version) [From the Vault]" —
+// hardcoded here rather than generalized, since "10 Minute Version"
+// isn't a label this schema can derive for any other song, and
+// labelling vault tracks generally was explicitly deferred by the
+// user as "unnecessary for now" (see TASKS.md backlog).
 foreach ($recordings as &$recording) {
-    if ($recording['version_type'] === 'original') {
+    if ($recording['song_title'] === 'All Too Well' && $recording['version_type'] === 'other') {
+        $recording['title'] = "All Too Well (10 Minute Version) (Taylor's Version) [From the Vault]";
+    } elseif ($recording['version_type'] === 'original') {
         $recording['title'] = $recording['song_title'];
     } else {
         $recording['title'] = $recording['song_title'] . ' (' . ucwords(format_version_type($recording['version_type'])) . ')';

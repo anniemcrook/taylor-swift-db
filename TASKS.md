@@ -847,9 +847,35 @@ now in the database.
       versions in one playlist" scenario — removing one correctly
       leaves the other; all touched files pass `node -c` and return
       200; no PHP errors in the dev server log.
+- [x] Corrected the Tournament's title for the All Too Well 10
+      Minute Version: it was showing the generic "(Extended
+      Version)" suffix, but the real, fan-recognized title is "All
+      Too Well (10 Minute Version) (Taylor's Version) [From the
+      Vault]" — verified via web search (user flagged it from
+      memory; confirmed before changing, same standard as the rest
+      of the catalog). Hardcoded in `tournament.php` rather than
+      generalized: "10 Minute Version" isn't a label derivable for
+      any other song from the current schema, and there's only one
+      `version_type = 'other'` recording in the whole catalogue, so
+      a generic rule would be solving a problem that doesn't exist
+      yet. Didn't bump the tournament's `schemaVersion` for this —
+      it's a display-string fix, not a change to the entity shape,
+      so an in-progress run doesn't need to be discarded over it.
+      Verified live: the three "All Too Well" entries now read
+      "All Too Well", "All Too Well (Taylor's Version)", and "All
+      Too Well (10 Minute Version) (Taylor's Version) [From the
+      Vault]"; no PHP errors in the dev server log.
 
 ## Backlog / Ideas
 
+- [ ] Label every "From the Vault" track (not just All Too Well)
+      and consider a dedicated page for them, similar to
+      `version.php`'s by-version-type browsing. User's own idea,
+      raised and then explicitly deferred as "unnecessary for now"
+      — don't build until asked. `album_tracks.edition = 'From the
+      Vault'` already identifies every vault track if/when this
+      gets picked up (already used for the vault-track count on
+      `stats.php`), so no schema work would be needed, just display.
 - [ ] Add official lyric videos as a fallback for songs that only
       have a lyric video and no full music video (currently they show
       nothing) — user's idea, explicitly deferred to later.
