@@ -71,8 +71,17 @@ $currentNav = 'tournament';
             Taylor's Version (and any acoustic/remix/demo take) each
             get their own entry, since fans often prefer one specific
             recording of a song over another — so it's a long haul.
-            Your progress is saved automatically in this browser, so
-            you can close the tab and pick up right where you left off.
+        </p>
+        <p class="muted">
+            This is double-elimination, not single: losing once drops
+            a song into a Losers Bracket for a second chance, rather
+            than knocking it out for good — so a song unlucky enough
+            to face one of your favourites early isn't automatically
+            gone. If you genuinely don't like or know either song in
+            a matchup, "Reject both" drops them for good instead of
+            forcing a pick. Your progress is saved automatically in
+            this browser, so you can close the tab and pick up right
+            where you left off.
         </p>
 
         <noscript>

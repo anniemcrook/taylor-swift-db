@@ -865,6 +865,68 @@ now in the database.
       "All Too Well", "All Too Well (Taylor's Version)", and "All
       Too Well (10 Minute Version) (Taylor's Version) [From the
       Vault]"; no PHP errors in the dev server log.
+- [x] Rebuilt the Tournament as double-elimination, per user
+      request after discussing the limits of single elimination: a
+      song that loses can unluckily be facing one of your other
+      favourites, not necessarily a worse song, and single
+      elimination has no way to give it a second chance. Added
+      "Reject both" for the opposite case the user also raised —
+      two songs you don't like/know, forced into a winner anyway.
+      Deliberately a *simplified* double elimination, not the
+      traditional interleaved kind: the Winners Bracket runs to
+      completion first, every WB loser is collected into a pool,
+      that pool runs as its own Losers Bracket, then the two bracket
+      champions meet in one Grand Final. A real interleaved
+      double-elim (LB rounds running concurrently with WB rounds,
+      carefully avoiding immediate rematches) is the competitive-
+      bracket-correct version, but meaningfully harder to schedule
+      correctly — this gets the same core guarantee (nobody's fully
+      out after one loss) without that complexity. Disclosed this
+      simplification to the user rather than silently picking it.
+      "Reject both" is available in either bracket (permanent, no
+      third chance — that's the point) but not the Grand Final,
+      since both finalists already proved themselves once.
+      Rewrote `tournament.js` around a reusable sub-bracket engine
+      (`buildSubBracket`/`resolveMatch`) used for both WB and LB,
+      with a `phase` state machine (winners → losers → final → done)
+      on top. Final ranking: champion, runner-up, then LB-eliminated
+      songs by how far they got in the LB (second-chance survival is
+      a real achievement), then "Reject both" casualties at the very
+      bottom (an explicit "didn't like either" is a stronger
+      negative signal than an ordinary loss). Bumped
+      `schemaVersion` to 3 (structure changed completely) — an old
+      save gets discarded with a one-time explanatory notice, same
+      pattern as the previous schema bump.
+      **Caught and fixed two real bugs via simulation before calling
+      this done, not after**:
+      1. A round that shrinks by 2 (one "reject both") instead of 1
+         can leave an odd number of winners going into the next
+         round — `pairUp()` would silently pair the last one with
+         `undefined`. Fixed by giving the odd one out a bye into the
+         next round, same mechanism as the byes a bracket starts
+         with.
+      2. `resolveMatch` was unconditionally recording a match's
+         losers into `sub.eliminated`, while the "reject both"
+         caller *also* recorded them into `state.rejectedBoth` —
+         same two songs counted twice in the final ranking whenever
+         "reject both" was used. Fixed by only recording into
+         `sub.eliminated` for a normal pick.
+      Verified via extensive Node simulation (not a real browser,
+      which isn't available in this environment): 50 randomized
+      trials across catalogue sizes 10-50 with ~20% random "reject
+      both" usage, re-run multiple times with different random
+      seeds, all producing a complete, duplicate-free ranking;
+      explicit tests for the odd-leftover-bye fix, the degenerate
+      "reject every single match" case (resolves to no champion
+      with a friendly message, no crash, no infinite loop), and undo
+      correctly reversing a WB→LB phase transition. Also verified
+      live: page returns 200, `tournament.js` passes `node -c`, no
+      PHP errors in the dev server log.
+      **Real cost of this change, flagged to the user**: total picks
+      for the full 334-recording catalogue goes from 333 (single
+      elimination) to roughly 666 (333 WB + 332 LB + 1 final) —
+      close to double the time commitment, as a direct consequence
+      of giving every song a genuine second chance.
 
 ## Backlog / Ideas
 
