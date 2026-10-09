@@ -756,6 +756,46 @@ now in the database.
       Verified live: page and script both return 200, `tournament.js`
       passes `node -c`, the embedded song list now includes each
       song's album, no PHP errors in the dev server log.
+- [x] Turned Tournament results into a saveable, length-limited
+      playlist, per user request after finishing their first full
+      run. Ranking for this is tier-based (champion, then runner-up,
+      then semifinalists, ... down to round-1 losers) — songs
+      eliminated in the same round are genuinely tied in a knockout
+      bracket (they never played each other), so a length that cuts
+      mid-tier just takes them in whatever order they happened to
+      resolve in; this was a deliberate simplification, not an
+      oversight, and there isn't really a better answer without
+      re-running extra matches the user never asked for.
+      New shared storage module `backend/playlists.js`
+      (`window.TSPlaylists`: save/readAll/remove/removeSong,
+      `localStorage` only, same no-account approach as everything
+      else) — deliberately generic (name + ordered song list) rather
+      than tournament-specific, so a future manual "build your own
+      playlist" feature (still in the backlog below) can reuse the
+      exact same storage and viewer without rework.
+      `tournament.php`'s song query extended to pull each song's
+      representative album_id/title/duration (previously just
+      album title, for the win-stats) — one subquery for the
+      recording_id, then a plain join, rather than three duplicated
+      correlated subqueries.
+      `tournament.js`: results screen now has a length input +
+      "Generate" button producing the ranked/truncated list (title,
+      album, duration, linking to `song.php`), then a name field +
+      "Save playlist" button.
+      New `backend/playlists.php` (added to nav as "My Playlists")
+      + `backend/playlists_view.js` (rendering only; storage stays
+      in playlists.js) lists every saved playlist as a card with a
+      delete-playlist button and a per-song remove button.
+      Updated `privacy.php` to cover playlists alongside favourites/
+      tournament progress.
+      Verified: `playlists.js`'s storage functions (save/readAll/
+      removeSong/remove) tested directly in Node with a minimal
+      localStorage polyfill — all four operations work correctly;
+      the tier-ranking logic simulated separately (8-song bracket)
+      confirms champion-first ordering, correct total length, and
+      sensible mid-tier truncation; all new/changed pages and
+      scripts return 200 and pass `node -c`; no PHP errors in the
+      dev server log. Not click-tested in a real browser.
 
 ## Backlog / Ideas
 
@@ -786,10 +826,14 @@ pages are also done — see "Completed" above.
 out simpler than originally scoped here: a classic single-elimination
 bracket (not a full pairwise-ranking convergence), which the user's
 own spec made clear.
-- [ ] Build Your Own Playlist — pick songs, cap the track count, name
-      it, see it rendered as an album-style card. Picking/naming/
-      capping is plain forms; drag-and-drop reordering is this
-      project's first real case for client-side JS.
+- [ ] Build Your Own Playlist — pick songs by hand (rather than
+      generating from the Tournament) and reorder them, cap the
+      track count, name it. Smaller than it looked originally: the
+      storage, naming, saving, and viewer (`playlists.js` /
+      `playlists.php`) already exist from the Tournament-to-playlist
+      feature — what's actually left is a song-picker UI and
+      drag-and-drop reordering, this project's first real case for
+      that kind of interaction.
 
 ### Data & statistics
 *Catalogue Statistics Dashboard* is done — see "Completed" above.

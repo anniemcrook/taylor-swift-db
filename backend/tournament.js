@@ -268,6 +268,148 @@
         return rows;
     }
 
+    // Groups eliminated songs by the round they fell in, furthest
+    // (most recent) first — shared by the "how everyone else did"
+    // display and the playlist generator below, so both agree on
+    // the same ranking.
+    function groupEliminatedByRound() {
+        var byRound = {};
+        var order = [];
+        state.eliminated.forEach(function (entry) {
+            if (!byRound[entry.label]) {
+                byRound[entry.label] = [];
+                order.push(entry.label);
+            }
+            byRound[entry.label].push(entry.song);
+        });
+        order.reverse();
+        return { byRound: byRound, order: order };
+    }
+
+    // Full ranking as a flat array, champion first, down to the
+    // round 1 losers last. Songs eliminated in the same round are
+    // genuinely tied in a knockout bracket (they never played each
+    // other), so there's no finer ordering between them — ties keep
+    // whatever order they happened to resolve in.
+    function rankedSongs() {
+        var grouped = groupEliminatedByRound();
+        var ranked = [state.champion];
+        grouped.order.forEach(function (label) {
+            grouped.byRound[label].forEach(function (song) {
+                ranked.push(song);
+            });
+        });
+        return ranked;
+    }
+
+    function formatDuration(song) {
+        if (!song.duration_seconds) {
+            return "";
+        }
+        var m = Math.floor(song.duration_seconds / 60);
+        var s = song.duration_seconds % 60;
+        return m + ":" + (s < 10 ? "0" : "") + s;
+    }
+
+    function renderPlaylistBuilder() {
+        var section = document.createElement("div");
+        section.className = "tournament-playlist-builder";
+
+        var heading = document.createElement("h3");
+        heading.textContent = "Make a playlist from these results";
+        section.appendChild(heading);
+
+        var ranked = rankedSongs();
+
+        var form = document.createElement("div");
+        form.className = "playlist-length-form";
+
+        var label = document.createElement("label");
+        label.textContent = "Playlist length: ";
+        var lengthInput = document.createElement("input");
+        lengthInput.type = "number";
+        lengthInput.min = "1";
+        lengthInput.max = String(ranked.length);
+        lengthInput.value = String(Math.min(20, ranked.length));
+        label.appendChild(lengthInput);
+        form.appendChild(label);
+
+        var generateBtn = document.createElement("button");
+        generateBtn.type = "button";
+        generateBtn.className = "tournament-reset";
+        generateBtn.textContent = "Generate";
+        form.appendChild(generateBtn);
+        section.appendChild(form);
+
+        var output = document.createElement("div");
+        output.className = "playlist-output";
+        section.appendChild(output);
+
+        generateBtn.addEventListener("click", function () {
+            var n = parseInt(lengthInput.value, 10);
+            if (!n || n < 1) n = 1;
+            if (n > ranked.length) n = ranked.length;
+            renderGeneratedPlaylist(output, ranked.slice(0, n));
+        });
+
+        root.appendChild(section);
+    }
+
+    function renderGeneratedPlaylist(output, songs) {
+        output.innerHTML = "";
+
+        var list = document.createElement("ol");
+        list.className = "plain-list";
+        songs.forEach(function (song) {
+            var li = document.createElement("li");
+            var link = document.createElement("a");
+            link.href = "song.php?song_id=" + encodeURIComponent(song.song_id);
+            var strong = document.createElement("strong");
+            strong.textContent = song.title;
+            link.appendChild(strong);
+            li.appendChild(link);
+            if (song.album) {
+                li.appendChild(document.createTextNode(" — " + song.album));
+            }
+            var duration = formatDuration(song);
+            if (duration) {
+                li.appendChild(document.createTextNode(" · " + duration));
+            }
+            list.appendChild(li);
+        });
+        output.appendChild(list);
+
+        var saveForm = document.createElement("div");
+        saveForm.className = "playlist-save-form";
+        var nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.placeholder = "Name this playlist";
+        nameInput.setAttribute("aria-label", "Playlist name");
+        saveForm.appendChild(nameInput);
+
+        var saveBtn = document.createElement("button");
+        saveBtn.type = "button";
+        saveBtn.className = "tournament-reset";
+        saveBtn.textContent = "Save playlist";
+        saveForm.appendChild(saveBtn);
+        output.appendChild(saveForm);
+
+        var confirmation = document.createElement("p");
+        confirmation.className = "muted";
+        confirmation.hidden = true;
+        output.appendChild(confirmation);
+
+        saveBtn.addEventListener("click", function () {
+            var name = nameInput.value.trim() || "My Tournament Playlist";
+            if (!window.TSPlaylists) {
+                return;
+            }
+            window.TSPlaylists.save(name, songs, "tournament");
+            confirmation.hidden = false;
+            confirmation.innerHTML = "Saved. <a href=\"playlists.php\">View your playlists</a>.";
+        });
+    }
+
     function renderResults() {
         var heading = document.createElement("h2");
         heading.textContent = "Your favourite is...";
@@ -292,18 +434,11 @@
         actions.appendChild(resetBtn);
         root.appendChild(actions);
 
-        // Group eliminated songs by the round they fell in, most
-        // recent (furthest they got) first.
-        var byRound = {};
-        var order = [];
-        state.eliminated.forEach(function (entry) {
-            if (!byRound[entry.label]) {
-                byRound[entry.label] = [];
-                order.push(entry.label);
-            }
-            byRound[entry.label].push(entry.song);
-        });
-        order.reverse();
+        renderPlaylistBuilder();
+
+        var grouped = groupEliminatedByRound();
+        var byRound = grouped.byRound;
+        var order = grouped.order;
 
         var rankingHeading = document.createElement("h3");
         rankingHeading.textContent = "How everyone else did";

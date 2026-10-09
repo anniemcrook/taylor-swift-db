@@ -578,10 +578,71 @@ ol.plain-list li {
   color: var(--text);
 }
 
+.tournament-playlist-builder {
+  margin: 1.5rem 0;
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--accent-wash);
+}
+
+.playlist-length-form,
+.playlist-save-form {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0;
+}
+
+.playlist-length-form input[type="number"],
+.playlist-save-form input[type="text"] {
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.playlist-length-form input[type="number"] {
+  width: 5rem;
+  margin-left: 0.4rem;
+}
+
+.playlist-save-form input[type="text"] {
+  flex: 1;
+  min-width: 160px;
+}
+
 @media (max-width: 600px) {
   .tournament-matchup {
     flex-direction: column;
   }
+}
+
+/* --- Playlists --- */
+
+.playlist-card {
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  margin-bottom: 1.5rem;
+}
+
+.playlist-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.playlist-card-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
 }
 
 /* --- Favourites --- */

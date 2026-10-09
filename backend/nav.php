@@ -1,7 +1,7 @@
 <?php
 // Expects an optional $currentNav variable to be set before include,
 // one of: 'home', 'search', 'compare', 'compare_albums', 'moods',
-// 'stats', 'favourites', 'tournament'.
+// 'stats', 'favourites', 'tournament', 'playlists'.
 // Used only to mark the current page for assistive tech
 // (aria-current) — never trust it as input, it's always set by the
 // including page itself, not the user.
@@ -21,6 +21,7 @@ $currentNav ??= null;
                 <li><a href="stats.php" <?= $currentNav === 'stats' ? 'aria-current="page"' : '' ?>>Stats</a></li>
                 <li><a href="favourites.php" <?= $currentNav === 'favourites' ? 'aria-current="page"' : '' ?>>Favourites</a></li>
                 <li><a href="tournament.php" <?= $currentNav === 'tournament' ? 'aria-current="page"' : '' ?>>Tournament</a></li>
+                <li><a href="playlists.php" <?= $currentNav === 'playlists' ? 'aria-current="page"' : '' ?>>My Playlists</a></li>
             </ul>
         </nav>
     </div>

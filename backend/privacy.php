@@ -33,6 +33,12 @@ $currentNav = null;
                 browser either.
             </li>
             <li>
+                <a href="playlists.php">Playlists</a> (including any
+                built from your Tournament results) are saved the
+                same way too — this browser only, nothing sent
+                anywhere.
+            </li>
+            <li>
                 The only outside requests this site makes are
                 server-side, to fetch album artwork and verify music
                 video links (see <a href="data_sources.php">Data

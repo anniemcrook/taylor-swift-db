@@ -9,20 +9,26 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 
-// Each song's representative album (preferring the original
+// Each song's representative recording (preferring the original
 // version, earliest release) — used to credit tournament wins back
-// to an album for the results-screen statistics. Same "pick one
-// representative recording" pattern as moods.php and song.php.
+// to an album for the results-screen statistics, and to show
+// album/duration on any playlist generated from the results. Same
+// "pick one representative recording" pattern as moods.php and
+// song.php.
 $songStmt = $pdo->query("
-    SELECT s.song_id, s.title,
-        (SELECT al.title
-            FROM recordings r
-            LEFT JOIN album_tracks at ON at.recording_id = r.recording_id
-            LEFT JOIN albums al ON al.album_id = at.album_id
-            WHERE r.song_id = s.song_id
-            ORDER BY (r.version_type = 'original') DESC, al.release_date, at.track_number
-            LIMIT 1) AS album
+    SELECT s.song_id, s.title, al.album_id, al.title AS album, rep.duration_seconds
     FROM songs s
+    LEFT JOIN recordings rep ON rep.recording_id = (
+        SELECT r2.recording_id
+        FROM recordings r2
+        LEFT JOIN album_tracks at2 ON at2.recording_id = r2.recording_id
+        LEFT JOIN albums al2 ON al2.album_id = at2.album_id
+        WHERE r2.song_id = s.song_id
+        ORDER BY (r2.version_type = 'original') DESC, al2.release_date, at2.track_number
+        LIMIT 1
+    )
+    LEFT JOIN album_tracks at ON at.recording_id = rep.recording_id
+    LEFT JOIN albums al ON al.album_id = at.album_id
     ORDER BY s.song_id
 ");
 $songs = $songStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -55,6 +61,7 @@ $currentNav = 'tournament';
     </main>
     <?php include __DIR__ . '/footer.php'; ?>
     <script>window.TS_SONGS = <?= json_encode($songs, JSON_HEX_TAG) ?>;</script>
+    <script src="playlists.js" defer></script>
     <script src="tournament.js" defer></script>
 </body>
 </html>
