@@ -390,6 +390,20 @@ tbody tr:hover {
   background: var(--surface);
 }
 
+/* A plain sub-list nested inside a .plain-list item (e.g. the tied
+   songs under one Tournament round) shouldn't look like its own
+   stack of cards — just simple indented lines. */
+.tournament-tied-songs {
+  margin: 0.5rem 0 0;
+  gap: 0.2rem;
+}
+
+.tournament-tied-songs li {
+  padding: 0 0 0 1rem;
+  border: none;
+  background: none;
+}
+
 .tag {
   display: inline-block;
   font-size: 0.75rem;

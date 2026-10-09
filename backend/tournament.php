@@ -1,6 +1,7 @@
 <?php
 // --- Database connection ---
 require __DIR__ . '/config.php';
+require __DIR__ . '/helpers.php';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
@@ -9,29 +10,38 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 
-// Each song's representative recording (preferring the original
-// version, earliest release) — used to credit tournament wins back
-// to an album for the results-screen statistics, and to show
-// album/duration on any playlist generated from the results. Same
-// "pick one representative recording" pattern as moods.php and
-// song.php.
-$songStmt = $pdo->query("
-    SELECT s.song_id, s.title, al.album_id, al.title AS album, rep.duration_seconds
-    FROM songs s
-    LEFT JOIN recordings rep ON rep.recording_id = (
-        SELECT r2.recording_id
-        FROM recordings r2
-        LEFT JOIN album_tracks at2 ON at2.recording_id = r2.recording_id
-        LEFT JOIN albums al2 ON al2.album_id = at2.album_id
-        WHERE r2.song_id = s.song_id
-        ORDER BY (r2.version_type = 'original') DESC, al2.release_date, at2.track_number
-        LIMIT 1
-    )
-    LEFT JOIN album_tracks at ON at.recording_id = rep.recording_id
+// One entity per *recording*, not per song — the original and the
+// Taylor's Version (and any acoustic/remix/demo/extended take) are
+// genuinely different recordings with their own fans, same
+// reasoning as why themes are tagged per recording rather than per
+// song (sql/0003_add_themes.sql). "Style" fans who specifically
+// prefer the original's production over the Taylor's Version remix
+// need to be able to vote for that recording, not an ambiguous
+// merged "Style".
+$recordingStmt = $pdo->query("
+    SELECT r.recording_id, r.song_id, s.title AS song_title, r.version_type,
+           r.duration_seconds, al.album_id, al.title AS album
+    FROM recordings r
+    JOIN songs s ON s.song_id = r.song_id
+    LEFT JOIN album_tracks at ON at.recording_id = r.recording_id
     LEFT JOIN albums al ON al.album_id = at.album_id
-    ORDER BY s.song_id
+    ORDER BY r.recording_id
 ");
-$songs = $songStmt->fetchAll(PDO::FETCH_ASSOC);
+$recordings = $recordingStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// The original recording keeps the bare song title; every other
+// version gets a plain-English suffix, e.g. "Style (Taylor's
+// Version)" or "All Too Well (Extended Version)".
+foreach ($recordings as &$recording) {
+    if ($recording['version_type'] === 'original') {
+        $recording['title'] = $recording['song_title'];
+    } else {
+        $recording['title'] = $recording['song_title'] . ' (' . ucwords(format_version_type($recording['version_type'])) . ')';
+    }
+    unset($recording['song_title'], $recording['version_type']);
+}
+unset($recording);
+$songs = $recordings;
 
 $pageTitle = 'Favourite Song Tournament — Taylor Swift Catalogue';
 $currentNav = 'tournament';
@@ -46,11 +56,14 @@ $currentNav = 'tournament';
     <main id="main">
         <h1>Favourite Song Tournament</h1>
         <p class="muted">
-            Pick a winner between two songs, over and over, until one
-            song is left standing. This covers all <?= count($songs) ?>
-            songs in the catalogue, so it's a long haul — your progress
-            is saved automatically in this browser, so you can close
-            the tab and pick up right where you left off.
+            Pick a winner between two, over and over, until one is
+            left standing. This covers all <?= count($songs) ?>
+            recordings in the catalogue — the original and the
+            Taylor's Version (and any acoustic/remix/demo take) each
+            get their own entry, since fans often prefer one specific
+            recording of a song over another — so it's a long haul.
+            Your progress is saved automatically in this browser, so
+            you can close the tab and pick up right where you left off.
         </p>
 
         <noscript>

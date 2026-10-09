@@ -62,7 +62,7 @@
 
             var list = document.createElement("ol");
             list.className = "plain-list";
-            playlist.songs.forEach(function (song) {
+            playlist.songs.forEach(function (song, index) {
                 var li = document.createElement("li");
 
                 var link = document.createElement("a");
@@ -86,7 +86,7 @@
                 removeBtn.textContent = "✕";
                 removeBtn.setAttribute("aria-label", "Remove " + song.title + " from this playlist");
                 removeBtn.addEventListener("click", function () {
-                    window.TSPlaylists.removeSong(playlist.id, song.song_id);
+                    window.TSPlaylists.removeSongAt(playlist.id, index);
                     render();
                 });
                 li.appendChild(document.createTextNode(" "));

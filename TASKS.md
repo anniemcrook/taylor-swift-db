@@ -796,6 +796,57 @@ now in the database.
       sensible mid-tier truncation; all new/changed pages and
       scripts return 200 and pass `node -c`; no PHP errors in the
       dev server log. Not click-tested in a real browser.
+- [x] Made the Tournament operate on *recordings* instead of
+      *songs*, per user feedback after finishing their first run:
+      the original and the Taylor's Version of a song are distinct
+      entities with genuinely different fan opinions (their own
+      example: Swifties strongly debating "Style" original vs. the
+      more heavily produced Taylor's Version), so collapsing them
+      into one entry was inaccurate. Same reasoning the themes
+      feature already uses for tagging per recording rather than
+      per song (`sql/0003_add_themes.sql`).
+      `tournament.php` now queries `recordings` joined to `songs`
+      (not the other way around), one entity per `recording_id`.
+      The original keeps the bare song title; every other version
+      gets a plain-English suffix built from the existing
+      `format_version_type()` helper — "Style (Taylor's Version)",
+      "All Too Well (Extended Version)", "Back to December
+      (Acoustic Version)", etc. Catalogue size for the bracket goes
+      from 254 to 334, so the bracket is now size 512 (178 byes, 333
+      total picks, 9 rounds instead of 8) — a real tradeoff of the
+      accuracy fix, called out to the user rather than left as a
+      surprise.
+      Added a `schemaVersion` field to the saved tournament state:
+      an old save (from before entities were per-recording) now
+      gets discarded with a one-time on-page notice explaining why,
+      rather than silently rendered with mismatched fields — the
+      previous update's "just default missing fields" approach
+      wasn't safe here since the entity shape itself changed, not
+      just which fields exist on it.
+      **Found and fixed a second bug this surfaced**: playlist
+      song-removal (`playlists.js`'s `removeSong`) matched by
+      `song_id`, which stopped being unique within a playlist once
+      a playlist could contain both "Style" and "Style (Taylor's
+      Version)" — removing one would've silently removed both.
+      Changed to `removeSongAt(playlistId, index)`, removing by
+      position instead, which can't collide no matter what. Updated
+      the one call site in `playlists_view.js` to pass the array
+      index from its `forEach`.
+      Also fixed the "How everyone else did" results list: it
+      joined tied songs with ", ", which is genuinely ambiguous
+      when titles contain commas themselves (user's example: "So
+      Long, London"). Changed to a nested list — one song per line,
+      each linking to `song.php` — instead of trying to find a
+      delimiter that's merely "probably" safe.
+      Verified: live queries confirm "Style"/"Style (Taylor's
+      Version)", all three "All Too Well" variants (original/TV/
+      Extended), and acoustic/remix/demo labels all render
+      correctly; total count is 334; bracket math re-simulated for
+      n=334 (512/178 byes/333 picks/9 rounds); the playlist
+      removal fix re-tested in Node with the exact "both Style
+      versions in one playlist" scenario — removing one correctly
+      leaves the other; all touched files pass `node -c` and return
+      200; no PHP errors in the dev server log.
 
 ## Backlog / Ideas
 

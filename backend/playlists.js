@@ -5,6 +5,11 @@
 // Tournament) so any future way of building a playlist (picking
 // songs by hand, say) can reuse the same storage and the same
 // playlists.php viewer.
+//
+// Songs are removed by position, not by song_id/recording_id — a
+// playlist built from the Tournament can contain both "Style" and
+// "Style (Taylor's Version)", which share a song_id, so song_id
+// alone isn't unique enough to safely identify one entry to remove.
 window.TSPlaylists = (function () {
     "use strict";
     var STORAGE_KEY = "ts_playlists";
@@ -48,15 +53,15 @@ window.TSPlaylists = (function () {
         writeAll(readAll().filter(function (p) { return p.id !== playlistId; }));
     }
 
-    function removeSong(playlistId, songId) {
+    function removeSongAt(playlistId, index) {
         var list = readAll();
         list.forEach(function (p) {
             if (p.id === playlistId) {
-                p.songs = p.songs.filter(function (s) { return String(s.song_id) !== String(songId); });
+                p.songs.splice(index, 1);
             }
         });
         writeAll(list);
     }
 
-    return { readAll: readAll, save: save, remove: remove, removeSong: removeSong };
+    return { readAll: readAll, save: save, remove: remove, removeSongAt: removeSongAt };
 })();

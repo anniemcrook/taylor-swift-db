@@ -7,14 +7,24 @@
 (function () {
     "use strict";
     var STORAGE_KEY = "ts_tournament";
+    // Bumped when the shape of a tournament entity changes (e.g.
+    // moving from one entity per song to one per recording) — an
+    // old save under the previous shape gets discarded rather than
+    // rendered with mismatched/missing fields.
+    var SCHEMA_VERSION = 2;
     var root = document.getElementById("tournament-root");
     if (!root || !window.TS_SONGS) {
         return;
     }
 
-    var albumBySongId = {};
+    // Keyed by recording_id, not song_id — the original and the
+    // Taylor's Version of the same song are different entities here
+    // and need their own album lookup (even though today they'd
+    // resolve to the same album either way, this keeps the lookup
+    // keyed the same way as everything else in this file).
+    var albumByRecordingId = {};
     window.TS_SONGS.forEach(function (s) {
-        albumBySongId[s.song_id] = s.album;
+        albumByRecordingId[s.recording_id] = s.album;
     });
 
     function shuffle(array) {
@@ -58,13 +68,14 @@
         var byes = shuffled.slice(0, byeCount);
         var playing = shuffled.slice(byeCount);
         return {
+            schemaVersion: SCHEMA_VERSION,
             round: 1,
             entrantsThisRound: size,
             queue: pairUp(playing),
             matchIndex: 0,
             winners: byes.slice(),
             eliminated: [], // { song, round, label }
-            wins: {}, // song_id -> number of matches actually won (byes don't count)
+            wins: {}, // recording_id -> number of matches actually won (byes don't count)
             totalSongs: shuffled.length,
             champion: null,
             history: [] // stack of previous snapshots, for "undo last pick"
@@ -77,6 +88,7 @@
     // fields and keeps sharing the same (shorter) history array.
     function snapshotState(s) {
         return JSON.parse(JSON.stringify({
+            schemaVersion: s.schemaVersion,
             round: s.round,
             entrantsThisRound: s.entrantsThisRound,
             queue: s.queue,
@@ -89,6 +101,8 @@
         }));
     }
 
+    var discardedIncompatibleSave = false;
+
     function readState() {
         try {
             var raw = localStorage.getItem(STORAGE_KEY);
@@ -96,6 +110,14 @@
                 return null;
             }
             var loaded = JSON.parse(raw);
+            if (loaded.schemaVersion !== SCHEMA_VERSION) {
+                // A save from before entities were one-per-recording
+                // (rather than one-per-song) — its song/queue/winners
+                // objects don't have the fields this version expects,
+                // so there's no safe way to resume it.
+                discardedIncompatibleSave = true;
+                return null;
+            }
             // Backward compatible with tournaments started before
             // undo/win-tracking existed — picks made before now just
             // won't be undoable or counted in the per-album stats.
@@ -129,7 +151,7 @@
     function pick(winner, loser) {
         state.history.push(snapshotState(state));
 
-        state.wins[winner.song_id] = (state.wins[winner.song_id] || 0) + 1;
+        state.wins[winner.recording_id] = (state.wins[winner.recording_id] || 0) + 1;
         state.winners.push(winner);
         state.eliminated.push({ song: loser, round: state.round, label: roundLabel(state.entrantsThisRound) });
         state.matchIndex += 1;
@@ -192,6 +214,16 @@
     function render() {
         root.innerHTML = "";
 
+        if (discardedIncompatibleSave) {
+            var notice = document.createElement("p");
+            notice.className = "muted";
+            notice.textContent = "Starting a fresh tournament: the original and Taylor's Version "
+                + "(and any other alternate recording) of a song now count as separate entries, "
+                + "so an older in-progress or finished run couldn't be carried over.";
+            root.appendChild(notice);
+            discardedIncompatibleSave = false;
+        }
+
         if (state.champion) {
             renderResults();
             return;
@@ -251,13 +283,13 @@
         // played still shows up (as the genuine "fewest winners"
         // answer) instead of being left out entirely.
         var totals = {};
-        Object.keys(albumBySongId).forEach(function (songId) {
-            var album = albumBySongId[songId] || "Unknown";
+        Object.keys(albumByRecordingId).forEach(function (recordingId) {
+            var album = albumByRecordingId[recordingId] || "Unknown";
             totals[album] = totals[album] || 0;
         });
-        Object.keys(state.wins).forEach(function (songId) {
-            var album = albumBySongId[songId] || "Unknown";
-            totals[album] = (totals[album] || 0) + state.wins[songId];
+        Object.keys(state.wins).forEach(function (recordingId) {
+            var album = albumByRecordingId[recordingId] || "Unknown";
+            totals[album] = (totals[album] || 0) + state.wins[recordingId];
         });
         var rows = Object.keys(totals).map(function (album) {
             return { album: album, wins: totals[album] };
@@ -449,11 +481,24 @@
         order.forEach(function (label) {
             var li = document.createElement("li");
             var strong = document.createElement("strong");
-            strong.textContent = label === "Final" ? "Runner-up: " : label + ": ";
+            strong.textContent = label === "Final" ? "Runner-up" : label;
             li.appendChild(strong);
-            li.appendChild(document.createTextNode(
-                byRound[label].map(function (s) { return s.title; }).join(", ")
-            ));
+
+            // One song per line rather than a comma-joined string —
+            // several titles contain commas themselves (e.g. "So
+            // Long, London"), which makes a joined list genuinely
+            // ambiguous to read, not just untidy.
+            var songList = document.createElement("ul");
+            songList.className = "plain-list tournament-tied-songs";
+            byRound[label].forEach(function (song) {
+                var songLi = document.createElement("li");
+                var songLink = document.createElement("a");
+                songLink.href = "song.php?song_id=" + encodeURIComponent(song.song_id);
+                songLink.textContent = song.title;
+                songLi.appendChild(songLink);
+                songList.appendChild(songLi);
+            });
+            li.appendChild(songList);
             list.appendChild(li);
         });
         root.appendChild(list);
