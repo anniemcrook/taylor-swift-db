@@ -463,6 +463,78 @@ ol.plain-list li {
   }
 }
 
+/* --- Tournament --- */
+
+.tournament-matchup {
+  display: flex;
+  align-items: stretch;
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+}
+
+.tournament-card {
+  flex: 1;
+  padding: 2rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.tournament-card:hover,
+.tournament-card:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-wash);
+}
+
+.tournament-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tournament-vs {
+  align-self: center;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.tournament-champion {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.tournament-reset {
+  margin-top: 1.5rem;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.tournament-reset:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 600px) {
+  .tournament-matchup {
+    flex-direction: column;
+  }
+}
+
 /* --- Favourites --- */
 
 .favourite-toggle {

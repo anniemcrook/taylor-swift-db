@@ -26,6 +26,13 @@ $currentNav = null;
                 shared, and clearing your browser data removes it.
             </li>
             <li>
+                The <a href="tournament.php">Favourite Song
+                Tournament</a> works the same way — your progress
+                through the bracket is saved locally so you can close
+                the tab and come back, but it never leaves this
+                browser either.
+            </li>
+            <li>
                 The only outside requests this site makes are
                 server-side, to fetch album artwork and verify music
                 video links (see <a href="data_sources.php">Data

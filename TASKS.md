@@ -606,6 +606,37 @@ now in the database.
       and `favorites.js` include both render correctly, no PHP
       errors in the dev server log. Favourite Songs now has a star
       next to every song title anywhere on the site.
+- [x] Built the Favourite Song Tournament — `backend/tournament.php`
+      + `backend/tournament.js`, in the main nav. Per user spec:
+      single-elimination bracket (pick a winner between two songs,
+      loser's out for good, winners keep pairing up), covering the
+      whole catalogue. Catalogue size (245) isn't a power of two, so
+      the bracket pads up to the next one (256) by giving 11 songs
+      a silent bye into round 2 — everyone else just sees a clean
+      run of matchups. Progress (current round, remaining matches,
+      every pick so far) is saved to `localStorage` after every
+      single pick, not just at round boundaries, since a full
+      tournament is ~244 picks across 8 rounds and realistically
+      spans many sessions — explicitly the point of a user-reported
+      similar app taking about 8 hours to finish. On reaching a
+      champion, results are grouped by the round each song was
+      eliminated in (Runner-up, Semifinalists, Quarterfinalists,
+      ... down to Round 1) — the same "rank by how far you got"
+      logic as a sports bracket. "Start over" clears saved progress
+      with a confirm prompt first.
+      Chose client-side JS + localStorage over a server session for
+      the same reason as Favourites: avoids introducing cookies.
+      Updated `privacy.php` to cover it alongside Favourites.
+      Verified the bracket math itself with a standalone Node
+      simulation of the pairing/round-advancing logic (not the real
+      browser DOM): for 245 songs it produces exactly 244 picks
+      across 8 rounds with byes landing correctly, matching the
+      hand-calculated numbers from the design discussion. Also
+      verified live: page returns 200, `tournament.js` passes
+      `node -c`, the embedded song list matches the DB's 245 songs,
+      no PHP errors in the dev server log. **Not yet click-tested in
+      a real browser** — that's the natural next check now that the
+      user is back at their laptop.
 
 ## Backlog / Ideas
 
@@ -614,6 +645,29 @@ now in the database.
       nothing) — user's idea, explicitly deferred to later.
 - [ ] Add any albums/bonus tracks released after *The Life of a
       Showgirl: The Encore* (Sept 2026) if and when they exist.
+- [ ] Add non-album singles/soundtrack songs — currently the
+      catalogue has zero songs of `album_type` 'single' or
+      'soundtrack' even though the schema already supports both.
+      User flagged this is missing. Confirmed via web search
+      (2026-10-09): **"Carolina"** (Where the Crawdads Sing, 2022 —
+      written solely by Taylor Swift, produced by Swift and Aaron
+      Dessner, 4:24, released via Republic Records June 24, 2022 —
+      [Rolling Stone](https://www.rollingstone.com/music/music-news/taylor-swift-carolina-new-song-where-the-crawdads-sing-1325032/),
+      [Wikipedia](https://en.wikipedia.org/wiki/Carolina_(Taylor_Swift_song)))
+      and **"I Knew It, I Knew You"** (Toy Story 5, 2026 — written
+      and produced by Swift and Jack Antonoff, tied to Jessie's
+      story —
+      [TheWrap](https://www.thewrap.com/creative-content/music/taylor-swift-new-toy-story-5-song-title/))
+      both exist and aren't in the catalogue yet; still need an
+      exact release date and duration for the Toy Story 5 song.
+      User mentioned "etc" — there may be more (e.g. "Crazier",
+      "Safe & Sound", "Eyes Open", "Beautiful Ghosts", "Sweeter
+      than Fiction", "Christmas Tree Farm", "Only the Young" are
+      other known standalone Taylor Swift singles/soundtrack songs,
+      none confirmed as wanted and none currently in the catalogue
+      either) — **waiting on the user's full list before writing
+      any seed SQL**, same verify-before-adding standard as the
+      rest of the catalogue.
 
 ## Feature backlog (user-proposed, 2026-10-07)
 
@@ -632,13 +686,10 @@ track borrows one. *Song Recommendations* and the 4 documentation
 pages are also done — see "Completed" above.
 
 ### Core interactive features
-- [ ] Favourite Song Tournament — pairwise "pick one" bracket across
-      the catalogue, ending in a personal ranking. The most
-      involved item on the list: needs a real algorithm (seeding,
-      avoiding redundant repeat comparisons, converging to a full
-      order from partial pairwise picks) on top of state tracked
-      across requests (no accounts, so this likely means session or
-      URL-encoded state). Biggest payoff, biggest build.
+*Favourite Song Tournament* is done — see "Completed" above. Turned
+out simpler than originally scoped here: a classic single-elimination
+bracket (not a full pairwise-ranking convergence), which the user's
+own spec made clear.
 - [ ] Build Your Own Playlist — pick songs, cap the track count, name
       it, see it rendered as an album-style card. Picking/naming/
       capping is plain forms; drag-and-drop reordering is this
@@ -697,10 +748,10 @@ still there at the start of the next.
       approach as Favourite Songs.
 - [ ] Personal Album Rankings — rank whole albums, same storage
       approach as the above two.
-- [ ] Shareable Results — let a tournament/ranking result be shared
-      via a URL rather than requiring an account (e.g. encode the
-      ranking as a compact query-string param). Depends on the
-      Tournament feature existing first.
+- [ ] Shareable Results — let a tournament result be shared via a
+      URL rather than requiring an account (e.g. encode the champion
+      + ranking as a compact query-string param). Now unblocked —
+      the Tournament itself is done.
 
 ### Quality / portfolio features
 - [ ] Accessibility Pass — keyboard nav, focus states, semantic
