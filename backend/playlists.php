@@ -25,6 +25,7 @@ $currentNav = 'playlists';
             No playlists yet. Finish a <a href="tournament.php">Tournament</a>
             run and save your results as a playlist.
         </p>
+        <p id="playlists-status" class="visually-hidden" role="status" aria-live="polite"></p>
         <div id="playlists-root"></div>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>

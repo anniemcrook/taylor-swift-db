@@ -88,6 +88,7 @@ $currentNav = 'tournament';
             <p class="muted">The tournament needs JavaScript enabled to run, since your progress is saved in your browser rather than on the server.</p>
         </noscript>
 
+        <p id="tournament-status" class="visually-hidden" role="status" aria-live="polite"></p>
         <div id="tournament-root"></div>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>

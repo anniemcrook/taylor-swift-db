@@ -126,7 +126,8 @@ input:focus-visible {
 
 .site-nav ul {
   display: flex;
-  gap: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -365,6 +366,13 @@ tbody tr:hover {
   margin-bottom: 1rem;
 }
 
+/* Semantically an h2 (follows the page's single h1), but keeps the
+   same visual size as before the fix to the heading hierarchy. */
+.result-card h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+}
+
 .result-card ul {
   margin: 0.5rem 0 0;
   padding-left: 1.2rem;
@@ -580,6 +588,7 @@ ol.plain-list li {
 
 .tournament-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1.5rem;
 }
@@ -756,7 +765,8 @@ ol.plain-list li {
 
 .site-footer-nav ul {
   display: flex;
-  gap: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.25rem;
   list-style: none;
   margin: 0;
   padding: 0;

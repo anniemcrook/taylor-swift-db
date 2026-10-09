@@ -26,8 +26,21 @@
     // makes an old save unsafe to resume as-is.
     var SCHEMA_VERSION = 3;
     var root = document.getElementById("tournament-root");
+    var statusEl = document.getElementById("tournament-status");
     if (!root || !window.TS_SONGS) {
         return;
+    }
+
+    // A pick/reject swaps out the entire matchup, which a screen
+    // reader has no other way to notice — this is a dedicated
+    // status region (separate from the visible, fully-rebuilt
+    // `root`) rather than making `root` itself a live region, since
+    // that would re-announce the whole new matchup/result block on
+    // every single click rather than just what changed.
+    function announce(message) {
+        if (statusEl) {
+            statusEl.textContent = message;
+        }
     }
 
     var albumByRecordingId = {};
@@ -257,6 +270,14 @@
         state.phase = "done";
     }
 
+    function announceOutcome() {
+        if (state.phase === "done") {
+            announce(state.champion
+                ? "Tournament complete. Your favourite is " + state.champion.title + "."
+                : "Tournament complete, but almost everything was rejected, so there's no clear favourite.");
+        }
+    }
+
     function pick(winner, opponent) {
         state.history.push(snapshotState(state));
         state.wins[winner.recording_id] = (state.wins[winner.recording_id] || 0) + 1;
@@ -276,6 +297,11 @@
 
         writeState(state);
         render();
+        if (state.phase === "done") {
+            announceOutcome();
+        } else {
+            announce("You picked " + winner.title + ". Next matchup loaded.");
+        }
     }
 
     function rejectBoth(a, b) {
@@ -286,6 +312,11 @@
         afterSubBracketMaybeFinished();
         writeState(state);
         render();
+        if (state.phase === "done") {
+            announceOutcome();
+        } else {
+            announce("Rejected both " + a.title + " and " + b.title + ". Next matchup loaded.");
+        }
     }
 
     function undo() {
@@ -298,6 +329,7 @@
         state.history = remainingHistory;
         writeState(state);
         render();
+        announce("Last pick undone.");
     }
 
     function startOver() {
@@ -308,6 +340,7 @@
         state = buildState();
         writeState(state);
         render();
+        announce("Started a new tournament.");
     }
 
     function makeUndoButton() {
@@ -576,6 +609,11 @@
         var confirmation = document.createElement("p");
         confirmation.className = "muted";
         confirmation.hidden = true;
+        // Present in the DOM (even while empty/hidden) before the
+        // save click fills it in, which is what a live region needs
+        // to actually announce the change.
+        confirmation.setAttribute("role", "status");
+        confirmation.setAttribute("aria-live", "polite");
         output.appendChild(confirmation);
 
         saveBtn.addEventListener("click", function () {

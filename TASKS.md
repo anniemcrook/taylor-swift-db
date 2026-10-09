@@ -927,6 +927,58 @@ now in the database.
       elimination) to roughly 666 (333 WB + 332 LB + 1 final) —
       close to double the time commitment, as a direct consequence
       of giving every song a genuine second chance.
+- [x] Accessibility + Responsive Design pass, focused on the newer
+      interactive features (Tournament, Playlists) per the backlog's
+      own note that this was the right time to do it. Audited
+      contrast, alt text, heading hierarchy, landmarks, keyboard
+      operability, focus styling, screen-reader announcements for
+      JS-driven updates, and nav wrapping at narrow widths.
+      **Confirmed already solid, no changes needed**: every text/
+      background color pair passes WCAG AA (computed contrast
+      ratios directly, lowest was 6.47:1 against a 4.5:1 minimum);
+      every `<img>` has real alt text; every click handler in
+      `favorites.js`/`tournament.js`/`playlists_view.js` is attached
+      to an actual `<button>` (confirmed none on a bare div/span),
+      so everything is keyboard-reachable and operable by default;
+      the global `button:focus-visible`/`a:focus-visible` rule
+      covers every custom control; no animations exist anywhere, so
+      there's nothing for `prefers-reduced-motion` to reduce; the
+      favourite star's `aria-label` already correctly overrides the
+      visible ★/☆ glyph as the accessible name.
+      **Real issues found and fixed**:
+      1. `search.php` skipped from `<h1>` straight to `<h3>` for
+         each result card, with no `<h2>` — fixed to `<h2>`, with a
+         scoped `.result-card h2` rule keeping the same visual size
+         as before so this is a semantic fix only, not a redesign.
+      2. No screen-reader announcement existed for any JS-driven
+         content swap. Added a dedicated `role="status"` /
+         `aria-live="polite"` region to `tournament.php` (announces
+         each pick/reject/undo and the final result) and
+         `playlists.php` (announces playlist/song deletion) —
+         deliberately a small dedicated region per page rather than
+         making the whole rebuilt list live, which would re-announce
+         everything on every small change. Favourites didn't need
+         this: its star buttons are proper ARIA toggles
+         (`aria-pressed` + a dynamic `aria-label`), which screen
+         readers already announce on their own.
+      3. **The most significant find**: `.site-nav ul` had no
+         `flex-wrap`, and the nav has grown to 9 items (Home,
+         Search, Compare Songs, Compare Albums, Moods, Stats,
+         Favourites, Tournament, My Playlists) since this rule was
+         written for a 5-item nav. At any width too narrow to fit
+         all 9 in one row, the nav would overflow horizontally
+         rather than wrap — a real bug on every single page, not
+         just the newer ones. Fixed with `flex-wrap: wrap`. Applied
+         the same fix to `.site-footer-nav ul` (4 items, same
+         missing property, lower risk but same bug) and added
+         `flex-wrap: wrap` to `.tournament-actions` defensively.
+      Verified live: all touched pages return 200, both JS files
+      pass `node -c`, no PHP errors in the dev server log. The nav
+      fix itself is standard, unambiguous CSS behavior; a visual
+      check wasn't possible this session since the built-in browser
+      tool can't reach `localhost` servers Claude starts itself —
+      worth a quick look at a real phone width next time the user's
+      at a browser.
 
 ## Backlog / Ideas
 
@@ -1033,18 +1085,12 @@ still there at the start of the next.
       the Tournament itself is done.
 
 ### Quality / portfolio features
-- [ ] Accessibility Pass — keyboard nav, focus states, semantic
-      HTML, alt text, contrast, screen-reader-friendly controls,
-      reduced-motion support. No new infrastructure — an audit and
-      fix-up pass over what's already built; some groundwork exists
-      already (`.visually-hidden`, `:focus-visible` styles, `aria-
-      current` in nav).
-- [ ] Responsive Design pass — the comparison and tournament UIs
-      specifically, on phones. Partly done already (the 480px/760px
-      media queries, the `main.wide` override); would mainly need
-      checking once the newer interactive features (tournament,
-      playlist builder) exist, since those are the layouts most
-      likely to break on narrow screens.
+*Accessibility Pass* and *Responsive Design pass* are done for now
+— see "Completed" above (found a real nav-overflow bug affecting
+every page, fixed heading hierarchy, added screen-reader
+announcements for JS-driven updates). Worth a real visual check on
+an actual phone at some point, since this session's fixes were
+verified by code review rather than a live render.
 - [ ] Dark Mode toggle — manual light/dark switch that remembers the
       choice, on top of the `prefers-color-scheme` support already
       in `style.css`. Needs a small bit of JS plus `localStorage`

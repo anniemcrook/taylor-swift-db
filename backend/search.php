@@ -94,13 +94,13 @@ $currentNav = 'search';
 
             <?php foreach ($results as $song): ?>
             <div class="result-card">
-                <h3>
+                <h2>
                     <a href="song.php?song_id=<?= (int) $song['song_id'] ?>"><?= htmlspecialchars($song['title']) ?></a>
                     <?= favourite_toggle_html((int) $song['song_id'], $song['title']) ?>
                     <?php if ($song['recording_count'] > 1): ?>
                     <a href="compare.php?song_id=<?= (int) $song['song_id'] ?>">(compare versions)</a>
                     <?php endif; ?>
-                </h3>
+                </h2>
                 <ul>
                     <?php foreach ($song['appearances'] as $appearance): ?>
                     <li>

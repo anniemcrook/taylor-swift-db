@@ -5,8 +5,20 @@
     "use strict";
     var root = document.getElementById("playlists-root");
     var empty = document.getElementById("playlists-empty");
+    var statusEl = document.getElementById("playlists-status");
     if (!root || !window.TSPlaylists) {
         return;
+    }
+
+    // Delete/remove buttons are one-shot actions, not toggles, so
+    // there's no "aria-pressed changed" announcement to lean on —
+    // a dedicated status region says what just happened instead of
+    // making the whole (fully-rebuilt) list live, which would
+    // re-announce every playlist's entire contents on every click.
+    function announce(message) {
+        if (statusEl) {
+            statusEl.textContent = message;
+        }
     }
 
     function formatDuration(song) {
@@ -50,6 +62,7 @@
                 }
                 window.TSPlaylists.remove(playlist.id);
                 render();
+                announce('Deleted the playlist "' + playlist.name + '".');
             });
             header.appendChild(deleteBtn);
             card.appendChild(header);
@@ -88,6 +101,7 @@
                 removeBtn.addEventListener("click", function () {
                     window.TSPlaylists.removeSongAt(playlist.id, index);
                     render();
+                    announce('Removed "' + song.title + '" from "' + playlist.name + '".');
                 });
                 li.appendChild(document.createTextNode(" "));
                 li.appendChild(removeBtn);
