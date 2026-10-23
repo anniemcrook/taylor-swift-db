@@ -13,6 +13,16 @@ $currentNav ??= null;
 // reads the session state it set up, never starts it itself.
 $loggedInUser = current_user();
 ?>
+<script>
+    // Read by favorites.js/playlists.js/tournament.js to decide
+    // whether to store Favourites/Playlists/Tournament results in
+    // this browser's localStorage (logged out) or on the server,
+    // under this account, so they follow you to any device (logged
+    // in). Set here, before any deferred script runs, since nav.php
+    // is always included before scripts.php in every page.
+    window.TS_LOGGED_IN = <?= $loggedInUser ? 'true' : 'false' ?>;
+    window.TS_CSRF_TOKEN = <?= json_encode(csrf_token()) ?>;
+</script>
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="site-header-inner">

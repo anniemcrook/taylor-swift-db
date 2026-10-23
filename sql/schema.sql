@@ -6,8 +6,8 @@
 --      This already includes everything sql/0001_add_album_tracks_edition.sql,
 --      sql/0002_add_recordings_music_video_url.sql,
 --      sql/0003_add_themes.sql, sql/0004_add_eras.sql,
---      sql/0005_add_users.sql, and sql/0006_add_user_song_themes.sql —
---      those files are kept only as a
+--      sql/0005_add_users.sql, sql/0006_add_user_song_themes.sql, and
+--      sql/0007_add_user_sync.sql — those files are kept only as a
 --      historical record of when each change was introduced; don't
 --      run them against a database built from this file, or you'll
 --      get a "duplicate column"/"table already exists" error.
@@ -65,7 +65,19 @@
 --     removes a curator-assigned tag. New theme names go through a
 --     profanity check and a near-duplicate check (see
 --     `backend/helpers.php`) before being inserted into `themes`.
+--   - `user_favourites`, `user_playlists`/`user_playlist_songs`, and
+--     `tournament_results`/`tournament_result_rankings` are the
+--     logged-in, cross-device versions of Favourites/Playlists/
+--     completed Tournament results — the same three features still
+--     work entirely in the browser's localStorage when logged out.
+--     The in-progress Tournament bracket itself (mid-play state, undo
+--     history) is never stored here, only the finished ranked result.
 
+DROP TABLE IF EXISTS `tournament_result_rankings`;
+DROP TABLE IF EXISTS `tournament_results`;
+DROP TABLE IF EXISTS `user_playlist_songs`;
+DROP TABLE IF EXISTS `user_playlists`;
+DROP TABLE IF EXISTS `user_favourites`;
 DROP TABLE IF EXISTS `user_song_themes`;
 DROP TABLE IF EXISTS `recording_themes`;
 DROP TABLE IF EXISTS `themes`;
@@ -190,4 +202,53 @@ CREATE TABLE `user_song_themes` (
   CONSTRAINT `user_song_themes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `user_song_themes_ibfk_2` FOREIGN KEY (`song_id`) REFERENCES `songs` (`song_id`),
   CONSTRAINT `user_song_themes_ibfk_3` FOREIGN KEY (`theme_id`) REFERENCES `themes` (`theme_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `user_favourites` (
+  `user_id` int NOT NULL,
+  `song_id` int NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`, `song_id`),
+  CONSTRAINT `user_favourites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `user_favourites_ibfk_2` FOREIGN KEY (`song_id`) REFERENCES `songs` (`song_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `user_playlists` (
+  `playlist_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `source` varchar(50) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`playlist_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `user_playlists_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `user_playlist_songs` (
+  `playlist_id` int NOT NULL,
+  `position` int NOT NULL,
+  `song_id` int NOT NULL,
+  PRIMARY KEY (`playlist_id`, `position`),
+  KEY `song_id` (`song_id`),
+  CONSTRAINT `user_playlist_songs_ibfk_1` FOREIGN KEY (`playlist_id`) REFERENCES `user_playlists` (`playlist_id`),
+  CONSTRAINT `user_playlist_songs_ibfk_2` FOREIGN KEY (`song_id`) REFERENCES `songs` (`song_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `tournament_results` (
+  `tournament_result_id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `completed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`tournament_result_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `tournament_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `tournament_result_rankings` (
+  `tournament_result_id` int NOT NULL,
+  `rank` int NOT NULL,
+  `recording_id` int NOT NULL,
+  PRIMARY KEY (`tournament_result_id`, `rank`),
+  KEY `recording_id` (`recording_id`),
+  CONSTRAINT `tournament_result_rankings_ibfk_1` FOREIGN KEY (`tournament_result_id`) REFERENCES `tournament_results` (`tournament_result_id`),
+  CONSTRAINT `tournament_result_rankings_ibfk_2` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`recording_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

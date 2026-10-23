@@ -2,6 +2,7 @@
 require __DIR__ . '/auth.php';
 $pageTitle = 'My Playlists — Taylor Swift Catalogue';
 $currentNav = 'playlists';
+$currentUser = current_user();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,9 +14,17 @@ $currentNav = 'playlists';
     <main id="main">
         <h1>My Playlists</h1>
         <p class="muted">
+            <?php if ($currentUser): ?>
+            You're logged in, so these are saved to your account and
+            will follow you to any device you log into.
+            <?php else: ?>
             Saved in this browser only — not sent anywhere, not tied
-            to an account. Build one from your
-            <a href="tournament.php">Tournament</a> results.
+            to an account, so they won't follow you to a different
+            device. <a href="login.php">Log in</a> to save them to
+            your account instead.
+            <?php endif; ?>
+            Build one from your <a href="tournament.php">Tournament</a>
+            results.
         </p>
 
         <noscript>

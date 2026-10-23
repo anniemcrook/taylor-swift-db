@@ -2,6 +2,7 @@
 require __DIR__ . '/auth.php';
 $pageTitle = 'Favourites — Taylor Swift Catalogue';
 $currentNav = 'favourites';
+$currentUser = current_user();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,9 +15,17 @@ $currentNav = 'favourites';
         <h1>Favourites</h1>
         <p class="muted">
             Click the <span aria-hidden="true">&#9734;</span> next to any
-            song to add it here. These are stored only in this browser —
-            not sent anywhere, not tied to an account — so they won't
-            follow you to a different device or browser.
+            song to add it here.
+            <?php if ($currentUser): ?>
+            You're logged in, so these are saved to your account and
+            will follow you to any device you log into.
+            <?php else: ?>
+            These are stored only in this browser — not sent anywhere,
+            not tied to an account — so they won't follow you to a
+            different device or browser.
+            <a href="login.php">Log in</a> to save them to your account
+            instead.
+            <?php endif; ?>
         </p>
 
         <noscript>

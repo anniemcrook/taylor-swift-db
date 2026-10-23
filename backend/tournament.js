@@ -172,7 +172,8 @@
             runnerUp: null,
             wins: {}, // recording_id -> number of matches actually won (byes/rejects don't count)
             totalSongs: window.TS_SONGS.length,
-            history: [] // stack of previous snapshots, for "undo last pick"
+            history: [], // stack of previous snapshots, for "undo last pick"
+            syncedToServer: false // true once this run's finished result has been POSTed (logged in only)
         };
     }
 
@@ -207,6 +208,7 @@
                 return null;
             }
             loaded.history = loaded.history || [];
+            loaded.syncedToServer = loaded.syncedToServer || false;
             return loaded;
         } catch (e) {
             return null;
@@ -353,6 +355,40 @@
         return undoBtn;
     }
 
+    // Only the finished ranked result is ever sent to the server —
+    // never the in-progress bracket itself (mid-play state, undo
+    // history), which stays local-only even while logged in. Fires
+    // once per completed run: readState() already carried
+    // syncedToServer forward, so a reload of an already-synced
+    // result is a no-op here, and this is also what covers "first
+    // login after finishing a tournament while logged out" — the
+    // same render() call that shows the result also sends it up.
+    function syncCompletedTournamentIfNeeded() {
+        if (state.phase !== "done" || state.syncedToServer || !window.TS_LOGGED_IN) {
+            return;
+        }
+        var ranked = rankedSongs();
+        if (ranked.length === 0) {
+            return;
+        }
+        fetch("api/tournament_results.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                csrf_token: window.TS_CSRF_TOKEN,
+                recording_ids: ranked.map(function (song) { return song.recording_id; })
+            })
+        }).then(function (resp) { return resp.json(); }).then(function (data) {
+            if (data && data.ok) {
+                state.syncedToServer = true;
+                writeState(state);
+            }
+        }).catch(function () {
+            // Network error — syncedToServer stays false, so the next
+            // render() (e.g. next page load) just tries again.
+        });
+    }
+
     function phaseLabel() {
         if (state.phase === "winners") return "Winners Bracket";
         if (state.phase === "losers") return "Losers Bracket";
@@ -375,6 +411,7 @@
 
         if (state.phase === "done") {
             renderResults();
+            syncCompletedTournamentIfNeeded();
             return;
         }
 
@@ -595,6 +632,7 @@
         saveForm.className = "playlist-save-form";
         var nameInput = document.createElement("input");
         nameInput.type = "text";
+        nameInput.maxLength = 255;
         nameInput.placeholder = "Name this playlist";
         nameInput.setAttribute("aria-label", "Playlist name");
         saveForm.appendChild(nameInput);
@@ -621,9 +659,10 @@
             if (!window.TSPlaylists) {
                 return;
             }
-            window.TSPlaylists.save(name, songs, "tournament");
-            confirmation.hidden = false;
-            confirmation.innerHTML = "Saved. <a href=\"playlists.php\">View your playlists</a>.";
+            window.TSPlaylists.save(name, songs, "tournament").then(function () {
+                confirmation.hidden = false;
+                confirmation.innerHTML = "Saved. <a href=\"playlists.php\">View your playlists</a>.";
+            });
         });
     }
 

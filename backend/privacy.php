@@ -36,12 +36,19 @@ $currentNav = null;
                 analytics, or anything shared with anyone else.
             </li>
             <li>
-                An account doesn't currently do anything with your
-                Favourites, Tournament progress, or Playlists — those
-                three still work exactly as described below, entirely in
-                your browser, whether or not you're logged in. Syncing
-                them to your account is a possible future feature, not
-                something this site does yet.
+                If you're logged in, your Favourites and Playlists are
+                saved to your account instead of just this browser, so
+                they follow you to any device you log into. The
+                in-progress <a href="tournament.php">Tournament</a>
+                bracket itself (which matchup you're on, your undo
+                history) always stays local to the browser you're
+                playing in, logged in or not — only the finished result
+                is saved to your account. The first time you log in
+                with existing Favourites/Playlists/a finished Tournament
+                result already in a browser, that local data is copied
+                to your account once; after that, your account is what's
+                shown, on every device, and local-only data on any
+                device is left alone.
             </li>
             <li>
                 If you're logged in, you can tag a song with a theme
@@ -57,24 +64,28 @@ $currentNav = null;
                 "hartbreak" both existing) before it's created.
             </li>
             <li>
-                <a href="favourites.php">Favourites</a> are saved using
-                your browser's local storage, not a cookie — the list
-                of songs you've starred lives only on this device, in
-                this browser. It's never sent to a server, never
-                shared, and clearing your browser data removes it.
+                When you're logged out: <a href="favourites.php">Favourites</a>
+                are saved using your browser's local storage, not a
+                cookie — the list of songs you've starred lives only
+                on this device, in this browser. It's never sent to a
+                server, never shared, and clearing your browser data
+                removes it. (See above for what changes once you log in.)
             </li>
             <li>
-                The <a href="tournament.php">Favourite Song
-                Tournament</a> works the same way — your progress
+                When you're logged out: the <a href="tournament.php">Favourite
+                Song Tournament</a> works the same way — your progress
                 through the bracket is saved locally so you can close
                 the tab and come back, but it never leaves this
-                browser either.
+                browser either. This part is actually true logged in
+                or out — only the finished result, not the in-progress
+                bracket, is ever saved to your account.
             </li>
             <li>
-                <a href="playlists.php">Playlists</a> (including any
-                built from your Tournament results) are saved the
-                same way too — this browser only, nothing sent
-                anywhere.
+                When you're logged out: <a href="playlists.php">Playlists</a>
+                (including any built from your Tournament results) are
+                saved the same way too — this browser only, nothing
+                sent anywhere. (See above for what changes once you
+                log in.)
             </li>
             <li>
                 The only outside requests this site makes are

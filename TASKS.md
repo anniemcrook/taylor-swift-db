@@ -1209,15 +1209,83 @@ that honestly rather than understating the lift.
       "Completed" above: registration, login, logout, a `users`
       table, hashed passwords, CSRF-protected forms, login status in
       the nav everywhere. Deliberately scoped to just that.
-      **Still open, not yet started**: syncing Favourites/Tournament
-      progress/Playlists to an account (the actual reason accounts
-      become more than a login screen — a real follow-on decision,
-      not automatic now that login exists); rate-limiting/lockout on
+      Syncing Favourites/Tournament results/Playlists to an account
+      is now done too — see the cross-device sync entry below.
+      **Still open, not yet started**: rate-limiting/lockout on
       repeated failed logins; a "forgot password" flow; email
       verification. The DB-root-password-rotation and non-root-DB-user
       items under "Deferred until going public" are no longer
       deferrable now that real user data (emails, password hashes)
       exists in this database.
+- [x] **Cross-device sync for Favourites/Playlists/Tournament
+      results.** Logged in, these three are stored under your
+      account instead of (or alongside) localStorage, so they follow
+      you to any device. Scope decisions, in order of how much they
+      matter:
+      1. **Only the finished Tournament *result* syncs, never the
+      in-progress bracket.** The live bracket (current matchup, undo
+      history) stays local to whichever browser you're playing in,
+      logged in or not — syncing a mid-play nested undo stack across
+      devices is a much bigger problem for little real benefit over
+      syncing the final ranked outcome, which is what was actually
+      asked for.
+      2. **First-login import, not continuous merge.** The first time
+      you log in on a device with existing local data and your
+      account has none of that type yet, it's copied up once; after
+      that the account is authoritative and local-only data on any
+      device is left alone, untouched. No multi-device conflict
+      resolution was built (e.g. device A has playlist X, device B
+      has playlist Y, which wins) — deliberately out of scope, flagged
+      honestly rather than attempted half-way.
+      3. **This is the first client-server fetch/AJAX in the
+      codebase** — confirmed zero `fetch`/AJAX calls existed anywhere
+      before this. Every previous feature was either a full-page PHP
+      form or pure localStorage JS.
+      New tables (`sql/0007_add_user_sync.sql`, folded into
+      `schema.sql`): `user_favourites` (user_id+song_id);
+      `user_playlists`/`user_playlist_songs` (ordered by `position`,
+      by `song_id` — title/album/duration are looked up live from the
+      catalogue at render time, never snapshotted); `tournament_results`/
+      `tournament_result_rankings` (by `recording_id`, not `song_id` —
+      the Tournament pits specific recordings against each other, and
+      the planned stats feature needs that precision for albums).
+      New `backend/api/` directory: `_bootstrap.php` (shared
+      login-required + CSRF-checked + DB-connected setup for every
+      endpoint), `favourites.php` (list/add/remove/import),
+      `playlists.php` (list/create/delete/remove_song/import, every
+      response returning the full current playlist list so the
+      client just re-renders rather than tracking its own merge
+      logic), `tournament_results.php` (one POST per finished run).
+      `nav.php` now exposes `window.TS_LOGGED_IN`/`window.TS_CSRF_TOKEN`
+      for the JS to read.
+      `favorites.js`/`playlists.js` rewritten to switch between
+      localStorage and server calls based on `TS_LOGGED_IN`, keeping
+      the same public interface (`TSPlaylists.readAll/save/remove/
+      removeSongAt`) so other code didn't need to change — though
+      every method now returns a Promise even on the localStorage
+      path, since going through the server made at least some of
+      them genuinely async; `playlists_view.js` and the relevant part
+      of `tournament.js` updated to chain off that. `tournament.js`
+      gained a `syncedToServer` flag (deliberately outside the
+      undo-tracked snapshot fields, so undo can't revert it) so a
+      finished run is only ever POSTed once.
+      Updated the "stored only in this browser" copy on
+      `favourites.php`/`playlists.php`/`tournament.php` and the
+      relevant `privacy.php` bullets to be accurate for both logged-in
+      and logged-out visitors, rather than leaving the old
+      logged-out-only claim in place.
+      Verified live with `curl` against the real database: favourites
+      list/add/list/remove/import/import-again (second import
+      correctly imports 0, proving the "only when server-side empty"
+      guard works); playlists create/list/remove_song (confirmed
+      position renumbering after a removal) /import/import-again;
+      a second test user's attempt to delete the first user's
+      playlist correctly did nothing (ownership check scoped the
+      `DELETE` to `WHERE ... AND user_id = :userId`, confirmed by
+      re-querying the DB directly); a tournament result submission
+      correctly wrote one `tournament_results` row plus ranked
+      `tournament_result_rankings` rows. All test users/playlists/
+      results deleted afterward.
 - [x] **Collective theme tagging — first milestone done.** Registered
       users only (resolved the "real account vs anonymous" question
       from below in favor of requiring login — simpler, and

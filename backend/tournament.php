@@ -11,6 +11,8 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 
+$currentUser = current_user();
+
 // One entity per *recording*, not per song — the original and the
 // Taylor's Version (and any acoustic/remix/demo/extended take) are
 // genuinely different recordings with their own fans, same
@@ -82,7 +84,16 @@ $currentNav = 'tournament';
             a matchup, "Reject both" drops them for good instead of
             forcing a pick. Your progress is saved automatically in
             this browser, so you can close the tab and pick up right
-            where you left off.
+            where you left off — that part always stays local to this
+            browser, even while logged in.
+            <?php if ($currentUser): ?>
+            Once you finish, though, the final result is also saved
+            to your account, so you'll still have it on another
+            device.
+            <?php else: ?>
+            <a href="login.php">Log in</a> to also save your finished
+            result to your account.
+            <?php endif; ?>
         </p>
 
         <noscript>
