@@ -44,6 +44,19 @@ $currentNav = null;
                 something this site does yet.
             </li>
             <li>
+                If you're logged in, you can tag a song with a theme
+                (an existing one, or a new one you suggest) on that
+                song's page. This is sent to and stored on the server —
+                your account's <code>user_id</code>, the song, and the
+                theme — so it can be shown to other visitors as a
+                community tag. It isn't anonymous: it's tied to your
+                account the same way a forum post would be. A theme
+                name you suggest is checked against a blocklist of
+                disallowed words and against existing theme names
+                (to avoid near-duplicates like "heartbreak" and
+                "hartbreak" both existing) before it's created.
+            </li>
+            <li>
                 <a href="favourites.php">Favourites</a> are saved using
                 your browser's local storage, not a cookie — the list
                 of songs you've starred lives only on this device, in
@@ -73,11 +86,11 @@ $currentNav = null;
         </ul>
 
         <p class="muted">
-            If this site ever lets logged-in users vote on song themes,
-            or shows aggregate stats pulled from everyone's Tournament
-            results, that'll genuinely involve sending something to the
-            server — this page will be updated to say so plainly rather
-            than quietly becoming inaccurate.
+            If this site ever shows aggregate stats pulled from
+            everyone's Tournament results, that'll also genuinely
+            involve sending something to the server — this page will
+            be updated to say so plainly rather than quietly becoming
+            inaccurate.
         </p>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>

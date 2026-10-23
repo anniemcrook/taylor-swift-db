@@ -1218,30 +1218,58 @@ that honestly rather than understating the lift.
       items under "Deferred until going public" are no longer
       deferrable now that real user data (emails, password hashes)
       exists in this database.
-- [ ] **Collective theme tagging** — let users vote on or add theme/
-      mood tags, instead of every tag being the site author's own
-      reading. Directly addresses the caveat repeated on every
-      `themes_*.sql` file and on `data_sources.php` ("not sourced
-      from anywhere... treat as a considered first draft") — this
-      would make that caveat genuinely outdated for any
-      user-contributed tag, which is worth updating in the copy once
-      it ships, not just in the data.
-      Real design question before writing any code: does a
-      user-submitted tag need a real account to prevent trivial
-      abuse (anyone can stuff votes by clearing `localStorage` or
-      opening an incognito window), or does it ship as a lighter
-      anonymous version first (one vote per theme per recording per
-      browser, tracked the same way Favourites tracks what's
-      starred) and get hardened once accounts exist? Either way,
-      needs a moderation story: does a suggested tag need a vote
-      threshold before it shows up alongside the curated ones, or
-      does it live in a visibly separate "community tags" section
-      so a drive-by troll tag can't silently join the canonical
-      list? That's a product decision, not just a schema one.
-      Schema-wise: a new table (something like `theme_suggestions`
-      or `recording_theme_votes`) rather than writing straight into
-      `recording_themes`, so a vote/suggestion is distinguishable
-      from the curated seed data.
+- [x] **Collective theme tagging — first milestone done.** Registered
+      users only (resolved the "real account vs anonymous" question
+      from below in favor of requiring login — simpler, and
+      consistent with tying this to accounts rather than localStorage).
+      New table `user_song_themes` (`sql/0006_add_user_song_themes.sql`,
+      folded into `schema.sql`): `user_id` + `song_id` + `theme_id` as
+      the primary key, so a tag is distinguishable from curated data
+      and a "vote count" is just how many distinct users applied the
+      same theme to the same song. Deliberately additive and separate
+      from `recording_themes` — it does **not** feed the Moods
+      playlist builder or the "Similar songs" algorithm, so the
+      curated recommendation data stays clean; this was the product
+      decision flagged below ("visibly separate community tags
+      section") rather than a vote-threshold-to-merge model.
+      On `song.php`: curator themes and a new "Community tags" line
+      (name + vote count) display separately; logged-in users get a
+      form to apply an existing theme or suggest a new one; logged-out
+      users see a login prompt instead of the form.
+      **User caught two real gaps before this was built, not after**
+      (unlike the accounts-milestone gaps, found proactively this
+      time): a new theme name needed (1) a profanity/slur filter, and
+      (2) protection against the list filling up with near-duplicate
+      misspellings ("heartbreak", "Heartbreak", "heart break",
+      "hartbreak" all becoming separate rows). Built both into
+      `backend/helpers.php`:
+      `theme_name_contains_blocked_word()` checks whole tokens (plus
+      a squashed-string check for spaced-out evasion like "r a p e")
+      against `backend/profanity_blocklist.php` — never a substring
+      scan, so a blocked word inside an unrelated word (e.g. "rape"
+      inside "grape") is never a false positive (the "Scunthorpe
+      problem"). `find_similar_theme()` does two passes: a
+      punctuation/case/whitespace-stripped exact match auto-reuses
+      the existing theme with no prompt (e.g. "Break Up" silently
+      becomes "breakup"), and a Levenshtein check scaled to word
+      length catches likely typos and asks "Did you mean X?" before
+      creating a near-duplicate, with an explicit "no, mine is
+      different" override.
+      Verified live with `curl`: "rape" blocked, "grapevine" correctly
+      *not* blocked (confirms no Scunthorpe false positive); "Break
+      Up" silently reused the existing "breakup" theme; "acceptence"
+      correctly triggered "Did you mean 'acceptance'?"; explicitly
+      confirming "mine is different" created a genuine new theme.
+      Test users/tags/theme deleted from the database afterward.
+      Updated `privacy.php` to honestly describe this (tagging is
+      tied to your account, not anonymous; theme suggestions are
+      filtered) per the promise it already made to update "plainly"
+      once this shipped.
+      **Deliberately not built in this milestone**: no moderation/
+      review queue before a tag goes live (flagging that honestly —
+      there's no review step between submission and a tag being
+      public); no way to remove your own tag; no rate-limiting on
+      how many tags one account can add.
 - [ ] **Community Tournament stats** (most popular songs/albums
       across everyone's Tournament results). The one piece of
       infrastructure this absolutely needs regardless of accounts:

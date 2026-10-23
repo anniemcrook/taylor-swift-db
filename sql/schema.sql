@@ -5,8 +5,9 @@
 --   2. mysql taylor_swift_db < sql/schema.sql
 --      This already includes everything sql/0001_add_album_tracks_edition.sql,
 --      sql/0002_add_recordings_music_video_url.sql,
---      sql/0003_add_themes.sql, sql/0004_add_eras.sql, and
---      sql/0005_add_users.sql — those files are kept only as a
+--      sql/0003_add_themes.sql, sql/0004_add_eras.sql,
+--      sql/0005_add_users.sql, and sql/0006_add_user_song_themes.sql —
+--      those files are kept only as a
 --      historical record of when each change was introduced; don't
 --      run them against a database built from this file, or you'll
 --      get a "duplicate column"/"table already exists" error.
@@ -56,7 +57,16 @@
 --     itself — just login credentials. Favourites/Tournament progress/
 --     Playlists still live entirely in the browser's own localStorage;
 --     nothing here ties a user to any of that data (yet).
+--   - `user_song_themes` is the second: logged-in users tagging a
+--     song with a theme (existing or newly suggested). Deliberately
+--     additive and separate from the curator-assigned
+--     `recording_themes` — it doesn't feed the Moods playlist builder
+--     or the "Similar songs" algorithm, and a row here never edits or
+--     removes a curator-assigned tag. New theme names go through a
+--     profanity check and a near-duplicate check (see
+--     `backend/helpers.php`) before being inserted into `themes`.
 
+DROP TABLE IF EXISTS `user_song_themes`;
 DROP TABLE IF EXISTS `recording_themes`;
 DROP TABLE IF EXISTS `themes`;
 DROP TABLE IF EXISTS `recording_producers`;
@@ -167,4 +177,17 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `user_song_themes` (
+  `user_id` int NOT NULL,
+  `song_id` int NOT NULL,
+  `theme_id` int NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`, `song_id`, `theme_id`),
+  KEY `song_id` (`song_id`, `theme_id`),
+  KEY `theme_id` (`theme_id`),
+  CONSTRAINT `user_song_themes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
+  CONSTRAINT `user_song_themes_ibfk_2` FOREIGN KEY (`song_id`) REFERENCES `songs` (`song_id`),
+  CONSTRAINT `user_song_themes_ibfk_3` FOREIGN KEY (`theme_id`) REFERENCES `themes` (`theme_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

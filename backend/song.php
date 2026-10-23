@@ -25,6 +25,111 @@ if (!$song) {
     die("No song found with that ID.");
 }
 
+// --- Handle a theme-tagging/suggestion submission, if any ---
+$currentUser = current_user();
+$tagErrors = [];
+$tagNotice = null;
+$pendingConfirmation = null;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['theme_action'])) {
+    if (!$currentUser) {
+        $tagErrors[] = 'You need to be logged in to tag this song.';
+    } elseif (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+        $tagErrors[] = 'Your session expired — please try again.';
+    } else {
+        $action = $_POST['theme_action'];
+
+        $applyThemeToSong = function (int $themeId) use ($pdo, $currentUser, $songId, &$tagNotice, &$tagErrors): void {
+            try {
+                $stmt = $pdo->prepare('INSERT INTO user_song_themes (user_id, song_id, theme_id) VALUES (:userId, :songId, :themeId)');
+                $stmt->execute(['userId' => $currentUser['user_id'], 'songId' => $songId, 'themeId' => $themeId]);
+                $tagNotice = 'Tag added — thanks!';
+            } catch (PDOException $e) {
+                if ($e->getCode() === '23000') {
+                    $tagNotice = "You've already tagged this song with that theme.";
+                } else {
+                    throw $e;
+                }
+            }
+        };
+
+        if ($action === 'apply_existing') {
+            $themeId = (int) ($_POST['theme_id'] ?? 0);
+            $checkStmt = $pdo->prepare('SELECT theme_id FROM themes WHERE theme_id = :id');
+            $checkStmt->execute(['id' => $themeId]);
+            if (!$checkStmt->fetch()) {
+                $tagErrors[] = 'Pick a theme from the list.';
+            } else {
+                $applyThemeToSong($themeId);
+            }
+        } elseif ($action === 'suggest_new') {
+            $newName = trim((string) ($_POST['new_theme_name'] ?? ''));
+            $confirmNew = isset($_POST['confirm_new_theme']);
+            $useExistingThemeId = isset($_POST['use_existing_theme_id']) ? (int) $_POST['use_existing_theme_id'] : null;
+
+            if ($useExistingThemeId) {
+                $applyThemeToSong($useExistingThemeId);
+            } elseif ($newName === '') {
+                $tagErrors[] = 'Enter a theme name.';
+            } elseif (strlen($newName) > 100) {
+                $tagErrors[] = 'Theme name must be 100 characters or fewer.';
+            } elseif (theme_name_contains_blocked_word($newName)) {
+                $tagErrors[] = "That theme name isn't allowed — try different wording.";
+            } else {
+                $similar = find_similar_theme($pdo, $newName);
+                if ($similar && $similar['certain']) {
+                    // Same concept, just written differently (case,
+                    // spacing, punctuation) — reuse automatically
+                    // rather than asking, since there's no real
+                    // ambiguity to confirm.
+                    $applyThemeToSong($similar['theme_id']);
+                } elseif ($similar && !$confirmNew) {
+                    // Close enough it's probably a typo of an
+                    // existing theme — ask before creating a
+                    // near-duplicate like "hartbreak" next to
+                    // "heartbreak".
+                    $pendingConfirmation = [
+                        'name' => $newName,
+                        'existing_name' => $similar['name'],
+                        'existing_theme_id' => $similar['theme_id'],
+                    ];
+                } else {
+                    try {
+                        $pdo->beginTransaction();
+                        $insertThemeStmt = $pdo->prepare('INSERT INTO themes (name) VALUES (:name)');
+                        $insertThemeStmt->execute(['name' => $newName]);
+                        $newThemeId = (int) $pdo->lastInsertId();
+                        $insertTagStmt = $pdo->prepare('INSERT INTO user_song_themes (user_id, song_id, theme_id) VALUES (:userId, :songId, :themeId)');
+                        $insertTagStmt->execute(['userId' => $currentUser['user_id'], 'songId' => $songId, 'themeId' => $newThemeId]);
+                        $pdo->commit();
+                        $tagNotice = 'New theme "' . $newName . '" suggested and added — thanks!';
+                    } catch (PDOException $e) {
+                        $pdo->rollBack();
+                        if ($e->getCode() === '23000') {
+                            $tagErrors[] = 'That theme already exists — try searching for it in the list above.';
+                        } else {
+                            throw $e;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+$communityTagsStmt = $pdo->prepare("
+    SELECT t.theme_id, t.name, COUNT(DISTINCT ust.user_id) AS vote_count
+    FROM user_song_themes ust
+    JOIN themes t ON t.theme_id = ust.theme_id
+    WHERE ust.song_id = :songId
+    GROUP BY t.theme_id, t.name
+    ORDER BY vote_count DESC, t.name
+");
+$communityTagsStmt->execute(['songId' => $songId]);
+$communityTags = $communityTagsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$allThemesForTagging = $pdo->query('SELECT theme_id, name FROM themes ORDER BY name')->fetchAll(PDO::FETCH_ASSOC);
+
 // --- Every recording of this song, with credits and music video ---
 $recordingStmt = $pdo->prepare("
     SELECT r.recording_id, r.version_type, r.duration_seconds, r.music_video_url,
@@ -141,6 +246,66 @@ $currentNav = null;
         <?php if ($themes !== []): ?>
         <p class="tag muted">Themes: <?= htmlspecialchars(implode(', ', $themes)) ?></p>
         <?php endif; ?>
+
+        <?php if ($communityTags !== []): ?>
+        <p class="tag muted">Community tags:
+            <?php foreach ($communityTags as $i => $communityTag): ?>
+                <?= $i > 0 ? ', ' : '' ?><?= htmlspecialchars($communityTag['name']) ?> (<?= (int) $communityTag['vote_count'] ?>)
+            <?php endforeach; ?>
+        </p>
+        <?php endif; ?>
+
+        <section class="theme-tagging">
+            <h2>Tag this song</h2>
+
+            <?php if ($tagNotice): ?>
+            <p class="form-notice"><?= htmlspecialchars($tagNotice) ?></p>
+            <?php endif; ?>
+
+            <?php if ($tagErrors !== []): ?>
+            <div class="form-errors">
+                <ul>
+                    <?php foreach ($tagErrors as $error): ?>
+                    <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!$currentUser): ?>
+            <p class="muted"><a href="login.php">Log in</a> to tag this song or suggest a new theme.</p>
+            <?php elseif ($pendingConfirmation): ?>
+            <form method="post" action="song.php?song_id=<?= (int) $songId ?>" class="auth-form">
+                <?= csrf_field() ?>
+                <input type="hidden" name="theme_action" value="suggest_new">
+                <input type="hidden" name="new_theme_name" value="<?= htmlspecialchars($pendingConfirmation['name']) ?>">
+                <p>Did you mean the existing theme "<strong><?= htmlspecialchars($pendingConfirmation['existing_name']) ?></strong>"?</p>
+                <button type="submit" name="use_existing_theme_id" value="<?= (int) $pendingConfirmation['existing_theme_id'] ?>">Yes, use that</button>
+                <button type="submit" name="confirm_new_theme" value="1">No, mine is different</button>
+            </form>
+            <?php else: ?>
+            <form method="post" action="song.php?song_id=<?= (int) $songId ?>" class="auth-form">
+                <?= csrf_field() ?>
+                <input type="hidden" name="theme_action" value="apply_existing">
+                <label for="theme_id">Apply an existing theme
+                    <select id="theme_id" name="theme_id">
+                        <?php foreach ($allThemesForTagging as $theme): ?>
+                        <option value="<?= (int) $theme['theme_id'] ?>"><?= htmlspecialchars($theme['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+                <button type="submit">Add tag</button>
+            </form>
+            <form method="post" action="song.php?song_id=<?= (int) $songId ?>" class="auth-form">
+                <?= csrf_field() ?>
+                <input type="hidden" name="theme_action" value="suggest_new">
+                <label for="new_theme_name">Or suggest a new theme
+                    <input type="text" id="new_theme_name" name="new_theme_name" maxlength="100">
+                </label>
+                <button type="submit">Suggest</button>
+            </form>
+            <?php endif; ?>
+        </section>
 
         <?php if ($recordingCount > 1): ?>
         <p class="muted"><a href="compare.php?song_id=<?= (int) $songId ?>">Compare all <?= $recordingCount ?> versions side by side</a></p>
