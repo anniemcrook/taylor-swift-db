@@ -116,6 +116,44 @@ $versionTypeStmt = $pdo->query("
 ");
 $versionTypes = $versionTypeStmt->fetchAll(PDO::FETCH_ASSOC);
 
+// --- Community Tournament results: most popular songs/albums,
+// aggregated across everyone's completed Tournament runs. Every run
+// covers the same full set of recordings (tournament.php has no
+// song-subset option), so average placement is directly comparable
+// across different users' results, not skewed by different-sized
+// runs. Submitting a result requires being logged in (see
+// backend/api/tournament_results.php) — not fully tamper-proof
+// against one account running the Tournament repeatedly, but tied
+// to a real account rather than fully anonymous.
+$tournamentResultCount = (int) $pdo->query('SELECT COUNT(*) FROM tournament_results')->fetchColumn();
+
+$topRecordingsStmt = $pdo->query("
+    SELECT trr.recording_id, s.song_id, s.title AS song_title, r.version_type,
+           AVG(trr.`rank`) AS avg_rank, COUNT(*) AS appearances
+    FROM tournament_result_rankings trr
+    JOIN recordings r ON r.recording_id = trr.recording_id
+    JOIN songs s ON s.song_id = r.song_id
+    GROUP BY trr.recording_id, s.song_id, s.title, r.version_type
+    ORDER BY avg_rank ASC
+    LIMIT 10
+");
+$topRecordings = $topRecordingsStmt->fetchAll(PDO::FETCH_ASSOC);
+foreach ($topRecordings as &$row) {
+    $row['title'] = recording_display_title($row['song_title'], $row['version_type']);
+}
+unset($row);
+
+$topAlbumsStmt = $pdo->query("
+    SELECT al.album_id, al.title, AVG(trr.`rank`) AS avg_rank, COUNT(*) AS appearances
+    FROM tournament_result_rankings trr
+    JOIN recordings r ON r.recording_id = trr.recording_id
+    JOIN album_tracks at ON at.recording_id = r.recording_id
+    JOIN albums al ON al.album_id = at.album_id
+    GROUP BY al.album_id, al.title
+    ORDER BY avg_rank ASC
+");
+$topAlbums = $topAlbumsStmt->fetchAll(PDO::FETCH_ASSOC);
+
 function format_duration(int $seconds): string
 {
     $hours = intdiv($seconds, 3600);
@@ -237,6 +275,44 @@ $currentNav = 'stats';
             <li><a href="version.php?type=<?= urlencode($vt['version_type']) ?>"><?= htmlspecialchars(format_version_type($vt['version_type'])) ?></a> <span class="tag muted">(<?= (int) $vt['cnt'] ?>)</span></li>
             <?php endforeach; ?>
         </ul>
+
+        <h2>Community Tournament results</h2>
+        <?php if ($tournamentResultCount === 0): ?>
+        <p class="muted">
+            Nobody's finished a <a href="tournament.php">Tournament</a>
+            run while logged in yet — once a few people have, their
+            favourites will show up here.
+        </p>
+        <?php else: ?>
+        <p class="muted">
+            From <?= $tournamentResultCount ?> completed
+            <a href="tournament.php">Tournament</a> run<?= $tournamentResultCount === 1 ? '' : 's' ?>
+            by logged-in users so far. Every run covers the full
+            catalogue, so a lower average placement means more
+            consistently preferred, not just a bigger sample.
+            <?= $tournamentResultCount < 5 ? ' Still a small sample — take it with a grain of salt.' : '' ?>
+        </p>
+
+        <h3>Most popular recordings</h3>
+        <ul class="plain-list">
+            <?php foreach ($topRecordings as $row): ?>
+            <li>
+                <a href="song.php?song_id=<?= (int) $row['song_id'] ?>"><?= htmlspecialchars($row['title']) ?></a>
+                <span class="tag muted">avg. placement <?= number_format((float) $row['avg_rank'], 1) ?> · <?= (int) $row['appearances'] ?> run<?= (int) $row['appearances'] === 1 ? '' : 's' ?></span>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+
+        <h3>Most popular albums</h3>
+        <ul class="plain-list">
+            <?php foreach ($topAlbums as $row): ?>
+            <li>
+                <a href="tracklist.php?album_id=<?= (int) $row['album_id'] ?>"><?= htmlspecialchars($row['title']) ?></a>
+                <span class="tag muted">avg. placement <?= number_format((float) $row['avg_rank'], 1) ?></span>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+        <?php endif; ?>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>
 </body>

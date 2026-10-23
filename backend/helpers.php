@@ -15,6 +15,26 @@ function format_version_type(string $versionType): string
     };
 }
 
+// Turns a recording into its fan-facing display title: the bare
+// song title for the original, a plain-English version suffix for
+// everything else (e.g. "Style (Taylor's Version)") — except the one
+// recording that needs its exact real-world title rather than the
+// generic rule, since the "All Too Well" 10-minute cut isn't just
+// "the extended version" to fans. Hardcoded rather than generalized:
+// "10 Minute Version" isn't a label this schema can derive for any
+// other song, and labelling vault tracks generally was explicitly
+// deferred by the user as "unnecessary for now" (see TASKS.md backlog).
+function recording_display_title(string $songTitle, string $versionType): string
+{
+    if ($songTitle === 'All Too Well' && $versionType === 'other') {
+        return "All Too Well (10 Minute Version) (Taylor's Version) [From the Vault]";
+    }
+    if ($versionType === 'original') {
+        return $songTitle;
+    }
+    return $songTitle . ' (' . ucwords(format_version_type($versionType)) . ')';
+}
+
 // Star toggle button for favouriting a song. Purely client-side —
 // favorites.js reads/writes this in localStorage, nothing is sent
 // to the server. Starts unfavourited; favorites.js corrects that on

@@ -97,11 +97,12 @@ $currentNav = null;
         </ul>
 
         <p class="muted">
-            If this site ever shows aggregate stats pulled from
-            everyone's Tournament results, that'll also genuinely
-            involve sending something to the server — this page will
-            be updated to say so plainly rather than quietly becoming
-            inaccurate.
+            The <a href="stats.php">Stats</a> page shows "most popular
+            recordings/albums" numbers worked out from everyone's
+            saved Tournament results in aggregate — your own result
+            contributes to those numbers, but the page itself only
+            ever shows averages and counts, never whose results they
+            came from.
         </p>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>

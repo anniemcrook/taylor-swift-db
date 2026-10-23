@@ -1338,35 +1338,50 @@ that honestly rather than understating the lift.
       there's no review step between submission and a tag being
       public); no way to remove your own tag; no rate-limiting on
       how many tags one account can add.
-- [ ] **Community Tournament stats** (most popular songs/albums
-      across everyone's Tournament results). The one piece of
-      infrastructure this absolutely needs regardless of accounts:
-      the server has to learn about a finished Tournament at all,
-      which it currently never does — every Tournament run lives
-      and dies entirely in one browser's `localStorage`, nothing is
-      ever sent anywhere. This would be the project's first-ever
-      fetch/AJAX call from the browser back to the server (a real
-      new pattern, not an extension of an existing one), landing in
-      a new table that aggregates wins per song/recording across
-      everyone who's run a Tournament.
-      Same abuse question as the theme voting: without accounts,
-      nothing stops someone (or a script) from submitting many fake
-      results to skew the leaderboard. Could ship as a for-fun,
-      not-trying-to-be-tamper-proof stat first, and tie submissions
-      to a real account later if that ever actually matters.
-      Also a real privacy-framing change worth being upfront about:
-      `privacy.php` currently says "nothing about you as a visitor
-      is sent anywhere" — a Tournament-result submission is
-      genuinely new data leaving the browser, even if it's
-      anonymous and contains nothing personally identifying. The
-      page would need a new paragraph, not just an edit to an
-      existing one.
+- [x] **Community Tournament stats — done.** Built on top of the
+      cross-device sync work above, which already landed the
+      `tournament_results`/`tournament_result_rankings` tables and
+      the account-tied (not anonymous) submission — the abuse
+      question flagged below is the same one that milestone already
+      addressed by requiring login.
+      New section on `stats.php` ("Community Tournament results"):
+      "Most popular recordings" and "Most popular albums", ranked by
+      average placement across every completed run. Worked at
+      recording granularity, same as the Tournament itself (an
+      original and its Taylor's Version are ranked separately, not
+      merged) — consistent with the reasoning in `tournament.php`
+      for why recordings, not songs, are the entrants. Average
+      placement is directly comparable across different users' runs
+      because every run covers the exact same full catalogue (no
+      song-subset option), so there's no "smaller bracket inflates
+      the ranking" skew to correct for. Albums roll up every member
+      recording's individual rank. An explicit small-sample caveat
+      shows below 5 completed runs, and an honest empty state shows
+      before anyone's finished one.
+      Extracted the recording-display-title logic (bare title for
+      the original, "(Taylor's Version)"-style suffix for everything
+      else, the hardcoded "All Too Well (10 Minute Version)..."
+      special case) out of `tournament.php` into a new
+      `recording_display_title()` in `backend/helpers.php`, since
+      the stats page needed the exact same formatting and copying
+      the special-cased hardcode a second time would've been a real
+      duplication, not just a convenience.
+      Updated `privacy.php`'s forward-looking promise (from the
+      accounts milestone) into a plain statement of what's now true:
+      your own result feeds the aggregate, but the page only ever
+      shows averages/counts, never whose results they came from.
+      Verified live: registered 3 test users, submitted a tournament
+      result from each via the real API, confirmed `stats.php`
+      correctly computed average placement per recording and per
+      album (including the Taylor's Version suffix rendering
+      correctly) and showed the right run count and small-sample
+      caveat; also checked the zero-results empty state separately.
+      All test data deleted afterward.
 
-**Suggested sequencing, not a decision**: accounts (item 1) is what
-makes the other two abuse-resistant and genuinely "collective"
-rather than "whoever's loudest in one browser session," but a
-lighter, anonymous, not-abuse-proof version of either item 2 or
-item 3 could be prototyped independently first, if visible progress
-before tackling the accounts system is preferred. Worth talking
-through which order actually makes sense before starting any of
-the three.
+**All three shipped, in the order originally suggested**: accounts
+first, then theme tagging and Tournament stats on top of it, so both
+ended up tied to real accounts rather than anonymous/abuse-prone from
+the start. Cross-device sync for Favourites/Playlists/Tournament
+results (not part of the original three, added when the user asked
+for it directly) landed in between, and the Tournament stats table it
+introduced is what the stats feature is actually built on.
