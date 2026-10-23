@@ -5,11 +5,11 @@
 --   2. mysql taylor_swift_db < sql/schema.sql
 --      This already includes everything sql/0001_add_album_tracks_edition.sql,
 --      sql/0002_add_recordings_music_video_url.sql,
---      sql/0003_add_themes.sql, and sql/0004_add_eras.sql — those
---      files are kept only as a historical record of when each
---      change was introduced; don't run them against a database
---      built from this file, or you'll get a "duplicate column"/
---      "table already exists" error.
+--      sql/0003_add_themes.sql, sql/0004_add_eras.sql, and
+--      sql/0005_add_users.sql — those files are kept only as a
+--      historical record of when each change was introduced; don't
+--      run them against a database built from this file, or you'll
+--      get a "duplicate column"/"table already exists" error.
 --   3. mysql taylor_swift_db < sql/0000_core_artists.sql
 --      Bootstraps Taylor Swift, Max Martin, Shellback, and Nathan
 --      Chapman — the only artists no dated seed file ever inserts
@@ -52,6 +52,10 @@
 --     recording rather than per song, same reasoning as credits: a
 --     10-minute extended cut or an acoustic take can read differently
 --     from the original even though the underlying song is the same.
+--   - `users` is the first table with no connection to the catalogue
+--     itself — just login credentials. Favourites/Tournament progress/
+--     Playlists still live entirely in the browser's own localStorage;
+--     nothing here ties a user to any of that data (yet).
 
 DROP TABLE IF EXISTS `recording_themes`;
 DROP TABLE IF EXISTS `themes`;
@@ -63,6 +67,7 @@ DROP TABLE IF EXISTS `albums`;
 DROP TABLE IF EXISTS `eras`;
 DROP TABLE IF EXISTS `songs`;
 DROP TABLE IF EXISTS `artists`;
+DROP TABLE IF EXISTS `users`;
 
 CREATE TABLE `artists` (
   `artist_id` int NOT NULL AUTO_INCREMENT,
@@ -152,4 +157,14 @@ CREATE TABLE `recording_themes` (
   KEY `theme_id` (`theme_id`),
   CONSTRAINT `recording_themes_ibfk_1` FOREIGN KEY (`recording_id`) REFERENCES `recordings` (`recording_id`),
   CONSTRAINT `recording_themes_ibfk_2` FOREIGN KEY (`theme_id`) REFERENCES `themes` (`theme_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `users` (
+  `user_id` int NOT NULL AUTO_INCREMENT,
+  `email` varchar(255) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `display_name` varchar(100) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

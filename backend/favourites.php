@@ -1,4 +1,5 @@
 <?php
+require __DIR__ . '/auth.php';
 $pageTitle = 'Favourites — Taylor Swift Catalogue';
 $currentNav = 'favourites';
 ?>

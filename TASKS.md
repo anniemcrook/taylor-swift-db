@@ -12,8 +12,15 @@ before the repo or app is ever made public or deployed anywhere:
       `backend/tracklist.php` and `backend/index.php` during early
       development. It was never committed to git, but was live on
       disk — rotate it as a precaution before treating it as safe.
+      **Genuinely more urgent as of 2026-10-23**: the `users` table
+      now holds real emails and password hashes, so this database
+      isn't purely disposable catalogue data anymore. Not acted on
+      without being asked, just flagged here honestly rather than
+      left at the same priority it had before accounts existed.
 - [ ] Decide on a real (non-root) MySQL user with limited privileges
-      for the app to connect as, instead of `root`.
+      for the app to connect as, instead of `root`. Same note as
+      above — this one's priority went up today too, for the same
+      reason.
 
 ## Completed
 
@@ -979,6 +986,60 @@ now in the database.
       tool can't reach `localhost` servers Claude starts itself —
       worth a quick look at a real phone width next time the user's
       at a browser.
+- [x] Built the first milestone of user accounts: registration,
+      login, logout, and a `users` table — deliberately scoped
+      narrowly, per the plan agreed with the user beforehand. Does
+      **not** yet sync Favourites/Tournament progress/Playlists to
+      an account; that's a separate, deliberate next decision, not
+      a side effect of login existing.
+      New table `users` (`sql/0005_add_users.sql`, folded into
+      `schema.sql`): email (`UNIQUE` — every table gets one now,
+      learned from the Sounwave bug), `password_hash`, `display_name`,
+      `created_at`. Passwords are never stored or logged directly —
+      `password_hash()`/`password_verify()` (bcrypt by default),
+      exactly the pattern the user had already shipped successfully
+      on a previous project, just moved onto this project's existing
+      PDO/prepared-statement house style.
+      New `backend/auth.php` — shared session + CSRF helpers,
+      required at the very top of all 16 existing pages (before any
+      HTML is echoed, since starting a session has to happen before
+      any output) so `nav.php` can show login status everywhere
+      without touching the database on every page load (login state
+      lives in `$_SESSION`, set once at login). `session_regenerate_id()`
+      on login (session-fixation hardening), `httponly`/`samesite=Lax`
+      on the session cookie, CSRF tokens on both the register and
+      login forms.
+      New `backend/register.php`, `backend/login.php`,
+      `backend/logout.php`. Login's failure message is deliberately
+      the same generic "Incorrect email or password" whether the
+      email doesn't exist or the password was wrong — doesn't leak
+      which registered emails exist. `nav.php` restructured (title |
+      nav+auth-status grouped together) to fit "Hi, {name} · Log
+      out" or "Log in · Register" without breaking the
+      `space-between` header layout.
+      Updated `privacy.php` (accounts are optional; what logging in
+      actually stores and why; one cookie now exists, but only if
+      you choose to log in; existing localStorage features are
+      explicitly *not* yet tied to an account) and `about.php` (the
+      "no client-side JavaScript" line was already stale from the
+      Favourites/Tournament work, fixed while touching nearby copy).
+      **Deliberately not built in this milestone** (logged as real
+      gaps, not silently skipped): no rate-limiting/lockout on
+      repeated failed logins, no "forgot password" flow, no email
+      verification. Worth doing before this is ever public.
+      Verified with a full end-to-end test using `curl` and a
+      cookie jar (not a real browser, which isn't reachable from
+      this environment for `localhost`): fetched a real CSRF token
+      from the register page and successfully registered an
+      account; confirmed `nav.php` showed "Hi, TestUser" immediately
+      after; logged out and confirmed the nav reverted; logged back
+      in with the same credentials and confirmed it worked; confirmed
+      wrong-password, duplicate-email, and invalid-CSRF-token all
+      produce the correct error message; queried the database
+      directly and confirmed the stored `password_hash` is a real
+      bcrypt hash (`$2y$12$...`), not plaintext; deleted the test
+      account afterward. All 18 pages pass `php -l` and return 200;
+      no errors in the dev server log.
 
 ## Backlog / Ideas
 
@@ -1122,24 +1183,19 @@ against that premise in different ways, so the usual "no new
 infrastructure needed" framing doesn't really apply here — flagging
 that honestly rather than understating the lift.
 
-- [ ] **User accounts + login.** The biggest architectural change
-      this project would take on. Needs: a `users` table, registration/
-      login/logout pages, password hashing (PHP's built-in
-      `password_hash()`/`password_verify()` — no new dependency),
-      sessions (meaning real cookies for the first time, which means
-      rewriting `privacy.php`'s "no cookies are set" claim rather
-      than just adding a line to it), CSRF protection on the forms,
-      and some basic brute-force/lockout handling on login. Worth
-      deciding *why* up front: accounts are only meaningful once
-      something is actually tied to them — most likely syncing
-      Favourites/Tournament progress/Playlists across devices, which
-      means also building server-side storage for all three (or
-      migrating them off `localStorage` entirely), which is its own
-      follow-on project, not a side effect of login existing. Once
-      real user data (emails, password hashes) exists, the two
-      items already sitting under "Deferred until going public"
-      (rotating the DB root password, a non-root DB user) stop being
-      deferrable — this is the point where that list gets urgent.
+- [x] **User accounts + login — first milestone done**, see
+      "Completed" above: registration, login, logout, a `users`
+      table, hashed passwords, CSRF-protected forms, login status in
+      the nav everywhere. Deliberately scoped to just that.
+      **Still open, not yet started**: syncing Favourites/Tournament
+      progress/Playlists to an account (the actual reason accounts
+      become more than a login screen — a real follow-on decision,
+      not automatic now that login exists); rate-limiting/lockout on
+      repeated failed logins; a "forgot password" flow; email
+      verification. The DB-root-password-rotation and non-root-DB-user
+      items under "Deferred until going public" are no longer
+      deferrable now that real user data (emails, password hashes)
+      exists in this database.
 - [ ] **Collective theme tagging** — let users vote on or add theme/
       mood tags, instead of every tag being the site author's own
       reading. Directly addresses the caveat repeated on every

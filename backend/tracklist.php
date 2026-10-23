@@ -1,6 +1,7 @@
 <?php
 // --- Database connection ---
 require __DIR__ . '/config.php';
+require __DIR__ . '/auth.php';
 require __DIR__ . '/artwork.php';
 require __DIR__ . '/helpers.php';
 

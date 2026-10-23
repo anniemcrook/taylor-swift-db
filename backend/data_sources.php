@@ -1,4 +1,5 @@
 <?php
+require __DIR__ . '/auth.php';
 $pageTitle = 'Data Sources — Taylor Swift Catalogue';
 $currentNav = null;
 ?>

@@ -1,4 +1,5 @@
 <?php
+require __DIR__ . '/auth.php';
 $pageTitle = 'Image Credits — Taylor Swift Catalogue';
 $currentNav = null;
 ?>

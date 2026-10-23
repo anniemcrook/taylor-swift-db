@@ -1,4 +1,5 @@
 <?php
+require __DIR__ . '/auth.php';
 $pageTitle = 'Privacy — Taylor Swift Catalogue';
 $currentNav = null;
 ?>
@@ -12,12 +13,36 @@ $currentNav = null;
     <main id="main">
         <h1>Privacy</h1>
 
-        <p>This is a short page because there isn't much to say.</p>
+        <p>
+            Creating an account is entirely optional — everything on this
+            site works without one. This page covers both cases.
+        </p>
 
         <ul>
-            <li>No accounts, logins, or sign-ups anywhere on this site.</li>
             <li>No analytics, tracking scripts, or third-party trackers of any kind.</li>
-            <li>No cookies are set.</li>
+            <li>
+                If you don't <a href="register.php">register</a> or
+                <a href="login.php">log in</a>, no cookie is set and no
+                account exists for you — the rest of this list applies.
+            </li>
+            <li>
+                If you do register or log in, this site stores your
+                email, a securely hashed password (never the password
+                itself — it's run through PHP's <code>password_hash()</code>,
+                the same one-way hashing approach used everywhere this
+                kind of thing is done properly), and the display name you
+                chose. Logging in sets one cookie, used only to remember
+                that you're logged in on this device — not for tracking,
+                analytics, or anything shared with anyone else.
+            </li>
+            <li>
+                An account doesn't currently do anything with your
+                Favourites, Tournament progress, or Playlists — those
+                three still work exactly as described below, entirely in
+                your browser, whether or not you're logged in. Syncing
+                them to your account is a possible future feature, not
+                something this site does yet.
+            </li>
             <li>
                 <a href="favourites.php">Favourites</a> are saved using
                 your browser's local storage, not a cookie — the list
@@ -48,9 +73,11 @@ $currentNav = null;
         </ul>
 
         <p class="muted">
-            If more personalisation features (ratings, rankings, that
-            kind of thing) are added later, they'll work the same way
-            — saved locally in your browser, nothing sent to a server.
+            If this site ever lets logged-in users vote on song themes,
+            or shows aggregate stats pulled from everyone's Tournament
+            results, that'll genuinely involve sending something to the
+            server — this page will be updated to say so plainly rather
+            than quietly becoming inaccurate.
         </p>
     </main>
     <?php include __DIR__ . '/footer.php'; ?>

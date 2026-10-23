@@ -1,4 +1,5 @@
 <?php
+require __DIR__ . '/auth.php';
 $pageTitle = 'About — Taylor Swift Catalogue';
 $currentNav = null;
 ?>
@@ -48,7 +49,8 @@ $currentNav = null;
             <li>MySQL for storage — see the schema in <code>sql/schema.sql</code></li>
             <li>Album artwork from the iTunes Search API</li>
             <li>Music video links verified against Taylor Swift's official YouTube channel</li>
-            <li>Plain HTML/CSS, no client-side JavaScript</li>
+            <li>Mostly plain HTML/CSS; a little vanilla JavaScript for the parts that save something in your browser (Favourites, the Tournament, Playlists) — no framework or library there either</li>
+            <li>Accounts, where you choose to create one, with hashed passwords — see <a href="privacy.php">Privacy</a> for exactly what that does and doesn't involve</li>
         </ul>
 
         <p class="muted">
