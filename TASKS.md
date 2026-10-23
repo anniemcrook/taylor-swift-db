@@ -1062,6 +1062,53 @@ now in the database.
       second one crashing. Verified live: posting a 150-character
       display name now renders "Display name must be 100 characters
       or fewer." instead of an uncaught exception.
+- [x] **First visual design pass** — user feedback was just "the
+      website does not look great," so before changing anything,
+      used headless Chrome (`google-chrome --headless --screenshot`,
+      with `--blink-settings=preferredColorScheme=1` to force light
+      mode, since the default run came back dark — no browser tool
+      in this environment can open `localhost`, but a locally
+      installed Chrome run straight from the shell isn't going
+      through that tool, so this works) to actually see what the
+      site looked like before guessing. Found one real bug and
+      fixed two things for personality:
+      **Bug**: era cards on the homepage had two compounding
+      problems, both in `backend/style.css`. (1) `.era-grid` is a
+      CSS Grid, which defaults to stretching every item in a row to
+      match the tallest — a dead gap was appearing below the cover
+      art on every era with only one album (no Taylor's Version),
+      since those cards had less natural content than their
+      row-siblings. Fixed with `align-items: start`. (2)
+      `.era-album { flex: 1 }` meant a *single* cover in a row grew
+      to fill the entire card width — combined with `aspect-ratio:
+      1/1`, Chrome was visibly not holding that ratio under the
+      stretch, rendering those covers as wide rectangles instead of
+      squares (confirmed by cropping and comparing screenshots
+      pixel-by-pixel before touching any CSS, since this didn't match
+      what the CSS alone implied). Fixed by capping
+      `.era-album .cover` at `max-width: 150px` instead of changing
+      the flex sizing — keeps covers a consistent size whether an
+      era has one album or two, without restructuring the markup.
+      **Personality**: the whole site used only the system font
+      stack, which read as generic/undesigned. Added "Fraunces" (a
+      warm variable serif) via Google Fonts for all headings
+      (`h1`/`h2`/`h3`, `.site-title`, `.era-name`,
+      `.tournament-champion`, `.stat-number`) while keeping the
+      existing system sans-serif for body text and UI — a deliberate
+      serif-display/sans-body pairing, not a full font swap, so
+      tables and buttons stay maximally readable. Also added a hover
+      lift + shadow to era cards, slightly increased heading sizes,
+      and tightened `.plain-list li` padding (was noticeably
+      oversized for single-line entries like the non-album singles
+      list).
+      Verified by re-screenshotting after each change — the era-card
+      fix was confirmed empirically (re-ran the same crop comparison
+      and saw genuinely square covers with no gap), not just assumed
+      from reading the CSS. Checked home/tracklist/song/stats/
+      tournament/login pages. Deliberately scoped to typography +
+      the one real bug this round, not a full re-skin — the color
+      palette, layout structure, and header nav were left alone
+      pending the user's reaction to this first pass.
 
 ## Backlog / Ideas
 
