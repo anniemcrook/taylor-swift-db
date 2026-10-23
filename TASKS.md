@@ -1040,6 +1040,28 @@ now in the database.
       bcrypt hash (`$2y$12$...`), not plaintext; deleted the test
       account afterward. All 18 pages pass `php -l` and return 200;
       no errors in the dev server log.
+- [x] **Accounts follow-up: server-side validation gaps closed.**
+      Found while answering a direct question about whether
+      server-side validation was "taken care of" — it mostly was
+      (prepared statements, CSRF, hashing, generic login errors were
+      all already correct), but two real gaps weren't: (1) no
+      max-length checks on `email`/`display_name` against the actual
+      `varchar(255)`/`varchar(100)` column sizes, and this DB runs
+      with `STRICT_TRANS_TABLES` (confirmed via `SELECT @@sql_mode;`)
+      so an overlong value throws rather than silently truncates —
+      previously uncaught, would've shown a raw PHP error page; (2)
+      no cap on password length, so a password past bcrypt's 72-byte
+      practical limit was silently truncated with no warning. Fixed
+      both with explicit length checks in `register.php` giving a
+      friendly `form-errors` message instead. Also wrapped the
+      `INSERT` in a `try`/`catch` for SQLSTATE `23000` (unique
+      violation) to close the TOCTOU race between the pre-insert
+      duplicate-email `SELECT` and the `INSERT` itself — two
+      near-simultaneous registrations with the same email now both
+      get the friendly "already exists" message instead of the
+      second one crashing. Verified live: posting a 150-character
+      display name now renders "Display name must be 100 characters
+      or fewer." instead of an uncaught exception.
 
 ## Backlog / Ideas
 

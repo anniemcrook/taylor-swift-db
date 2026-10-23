@@ -28,14 +28,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = (string) ($_POST['password'] ?? '');
     $passwordConfirm = (string) ($_POST['password_confirm'] ?? '');
 
+    // Length checks matter here, not just format: `users.email` and
+    // `users.display_name` are varchar(255)/varchar(100), and this
+    // database runs in strict SQL mode, so an overlong value doesn't
+    // get silently truncated — it throws. Reject it here with a
+    // friendly message instead of letting that exception surface.
+    // The password cap is for a different reason: bcrypt (what
+    // password_hash() uses by default) silently truncates anything
+    // past 72 bytes, so two different long passwords sharing the
+    // same first 72 bytes would hash identically — reject rather
+    // than rely on that silently.
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Enter a valid email address.';
+    } elseif (strlen($email) > 255) {
+        $errors[] = 'Email address is too long.';
     }
     if ($displayName === '') {
         $errors[] = 'Enter a display name.';
+    } elseif (strlen($displayName) > 100) {
+        $errors[] = 'Display name must be 100 characters or fewer.';
     }
     if (strlen($password) < 8) {
         $errors[] = 'Password must be at least 8 characters.';
+    } elseif (strlen($password) > 72) {
+        $errors[] = 'Password must be 72 characters or fewer.';
     }
     if ($password !== $passwordConfirm) {
         $errors[] = 'Passwords do not match.';
@@ -52,10 +68,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($errors === []) {
         $hash = password_hash($password, PASSWORD_DEFAULT);
         $insertStmt = $pdo->prepare('INSERT INTO users (email, password_hash, display_name) VALUES (:email, :hash, :name)');
-        $insertStmt->execute(['email' => $email, 'hash' => $hash, 'name' => $displayName]);
-        log_in_user((int) $pdo->lastInsertId(), $email, $displayName);
-        header('Location: index.php');
-        exit;
+        try {
+            $insertStmt->execute(['email' => $email, 'hash' => $hash, 'name' => $displayName]);
+            log_in_user((int) $pdo->lastInsertId(), $email, $displayName);
+            header('Location: index.php');
+            exit;
+        } catch (PDOException $e) {
+            // SQLSTATE 23000 = integrity constraint violation. Covers
+            // the narrow race where two requests check "does this
+            // email exist" at the same moment, both see no, and both
+            // try to insert — the UNIQUE constraint on email lets only
+            // one through, and the other lands here instead of the
+            // pre-check above.
+            if ($e->getCode() === '23000') {
+                $errors[] = 'An account with that email already exists — try logging in instead.';
+            } else {
+                throw $e;
+            }
+        }
     }
 }
 
