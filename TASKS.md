@@ -1108,3 +1108,91 @@ verified by code review rather than a live render.
 All 5 items here (Image Credits & Licences, About the Project, Data
 Sources, Privacy, Clear Unofficial Branding) are done — see the
 "Completed" section above.
+
+## New direction, 2026-10-23: accounts + community-contributed data
+
+Three items the user added, logged together because they genuinely
+interconnect. This is a real shift, not just three more features —
+every piece of personalisation built so far (Favourites, Tournament
+progress, Playlists) was deliberately designed around *zero*
+accounts and *zero* server-side user data, specifically to avoid
+needing auth, sessions, or cookies (see `privacy.php`, which
+currently promises exactly that). All three items below push
+against that premise in different ways, so the usual "no new
+infrastructure needed" framing doesn't really apply here — flagging
+that honestly rather than understating the lift.
+
+- [ ] **User accounts + login.** The biggest architectural change
+      this project would take on. Needs: a `users` table, registration/
+      login/logout pages, password hashing (PHP's built-in
+      `password_hash()`/`password_verify()` — no new dependency),
+      sessions (meaning real cookies for the first time, which means
+      rewriting `privacy.php`'s "no cookies are set" claim rather
+      than just adding a line to it), CSRF protection on the forms,
+      and some basic brute-force/lockout handling on login. Worth
+      deciding *why* up front: accounts are only meaningful once
+      something is actually tied to them — most likely syncing
+      Favourites/Tournament progress/Playlists across devices, which
+      means also building server-side storage for all three (or
+      migrating them off `localStorage` entirely), which is its own
+      follow-on project, not a side effect of login existing. Once
+      real user data (emails, password hashes) exists, the two
+      items already sitting under "Deferred until going public"
+      (rotating the DB root password, a non-root DB user) stop being
+      deferrable — this is the point where that list gets urgent.
+- [ ] **Collective theme tagging** — let users vote on or add theme/
+      mood tags, instead of every tag being the site author's own
+      reading. Directly addresses the caveat repeated on every
+      `themes_*.sql` file and on `data_sources.php` ("not sourced
+      from anywhere... treat as a considered first draft") — this
+      would make that caveat genuinely outdated for any
+      user-contributed tag, which is worth updating in the copy once
+      it ships, not just in the data.
+      Real design question before writing any code: does a
+      user-submitted tag need a real account to prevent trivial
+      abuse (anyone can stuff votes by clearing `localStorage` or
+      opening an incognito window), or does it ship as a lighter
+      anonymous version first (one vote per theme per recording per
+      browser, tracked the same way Favourites tracks what's
+      starred) and get hardened once accounts exist? Either way,
+      needs a moderation story: does a suggested tag need a vote
+      threshold before it shows up alongside the curated ones, or
+      does it live in a visibly separate "community tags" section
+      so a drive-by troll tag can't silently join the canonical
+      list? That's a product decision, not just a schema one.
+      Schema-wise: a new table (something like `theme_suggestions`
+      or `recording_theme_votes`) rather than writing straight into
+      `recording_themes`, so a vote/suggestion is distinguishable
+      from the curated seed data.
+- [ ] **Community Tournament stats** (most popular songs/albums
+      across everyone's Tournament results). The one piece of
+      infrastructure this absolutely needs regardless of accounts:
+      the server has to learn about a finished Tournament at all,
+      which it currently never does — every Tournament run lives
+      and dies entirely in one browser's `localStorage`, nothing is
+      ever sent anywhere. This would be the project's first-ever
+      fetch/AJAX call from the browser back to the server (a real
+      new pattern, not an extension of an existing one), landing in
+      a new table that aggregates wins per song/recording across
+      everyone who's run a Tournament.
+      Same abuse question as the theme voting: without accounts,
+      nothing stops someone (or a script) from submitting many fake
+      results to skew the leaderboard. Could ship as a for-fun,
+      not-trying-to-be-tamper-proof stat first, and tie submissions
+      to a real account later if that ever actually matters.
+      Also a real privacy-framing change worth being upfront about:
+      `privacy.php` currently says "nothing about you as a visitor
+      is sent anywhere" — a Tournament-result submission is
+      genuinely new data leaving the browser, even if it's
+      anonymous and contains nothing personally identifying. The
+      page would need a new paragraph, not just an edit to an
+      existing one.
+
+**Suggested sequencing, not a decision**: accounts (item 1) is what
+makes the other two abuse-resistant and genuinely "collective"
+rather than "whoever's loudest in one browser session," but a
+lighter, anonymous, not-abuse-proof version of either item 2 or
+item 3 could be prototyped independently first, if visible progress
+before tackling the accounts system is preferred. Worth talking
+through which order actually makes sense before starting any of
+the three.
