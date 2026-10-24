@@ -3,6 +3,7 @@
 require __DIR__ . '/config.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/artwork.php';
+require __DIR__ . '/helpers.php';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
@@ -63,9 +64,16 @@ $currentNav = 'home';
     <?php include __DIR__ . '/nav.php'; ?>
     <main id="main">
         <h1>Eras</h1>
+        <p class="muted intro-text">
+            Every studio album, grouped the way it actually matters to
+            fans — a re-recording sits with the era it belongs to, not
+            off on its own by release date. Pick an era to browse its
+            tracklist, or use <a href="search.php">Search</a> and
+            <a href="moods.php">Moods</a> to cut across all of them.
+        </p>
         <ul class="era-grid">
             <?php foreach ($eras as $era): ?>
-            <li class="era-card">
+            <li class="era-card" style="--era-accent: <?= htmlspecialchars(era_accent_color($era['name'])) ?>;">
                 <div class="era-header">
                     <span class="era-icon" aria-hidden="true"><?= htmlspecialchars($era['icon'] ?? '') ?></span>
                     <span class="era-name"><?= htmlspecialchars($era['name']) ?></span>

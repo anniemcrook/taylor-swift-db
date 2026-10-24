@@ -35,6 +35,31 @@ function recording_display_title(string $songTitle, string $versionType): string
     return $songTitle . ' (' . ucwords(format_version_type($versionType)) . ')';
 }
 
+// A hex accent colour per era, derived from the same official
+// coloured-heart emoji already verified in sql/eras_seed.sql (fan/
+// Taylor-Nation convention, not guessed) — used to give each era
+// card on the homepage its own identity instead of one flat accent
+// everywhere. Falls back to the site's default accent for any era
+// not listed (e.g. if a future era is added before this is updated).
+function era_accent_color(string $eraName): string
+{
+    return match ($eraName) {
+        'Taylor Swift' => '#3a9456',
+        'Fearless' => '#c9a227',
+        'Speak Now' => '#7c4dbf',
+        'Red' => '#b3263f',
+        '1989' => '#3fa9d6',
+        'reputation' => '#55555c',
+        'Lover' => '#e8699e',
+        'folklore' => '#8c8c93',
+        'evermore' => '#8b5e3c',
+        'Midnights' => '#33407a',
+        'The Tortured Poets Department' => '#9a958f',
+        'The Life of a Showgirl' => '#e2502f',
+        default => '#9c1f3f',
+    };
+}
+
 // Star toggle button for favouriting a song. Purely client-side —
 // favorites.js reads/writes this in localStorage, nothing is sent
 // to the server. Starts unfavourited; favorites.js corrects that on

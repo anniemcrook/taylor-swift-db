@@ -1109,6 +1109,70 @@ now in the database.
       the one real bug this round, not a full re-skin — the color
       palette, layout structure, and header nav were left alone
       pending the user's reaction to this first pass.
+- [x] **Second visual design pass — full redesign.** User's reaction
+      to the first pass: "the colours, the theme, the layout,
+      everything needs work." Declined a scoped follow-up round of
+      clarifying questions (rejected the question tool outright) and
+      just named the problem broadly instead, so this round took
+      real creative initiative rather than asking for more specifics
+      — a genuine redesign, not another round of small tweaks.
+      **Per-era accent colours** — the single biggest change. New
+      `era_accent_color()` in `backend/helpers.php`, keyed by era
+      name, mapped from the same official coloured-heart emoji
+      already verified (not guessed) in `sql/eras_seed.sql` — so
+      each homepage era card gets a top border + icon badge in its
+      actual real-world brand colour (green debut, gold Fearless,
+      purple Speak Now, etc.) via a CSS custom property set inline
+      per card (`style="--era-accent: ..."`), rather than one flat
+      accent colour everywhere. This did the most work in making the
+      site feel like *this* artist's catalogue rather than a generic
+      template. One bug caught during dark-mode verification:
+      reputation's near-black (`#2b2b2b`) was nearly invisible
+      against the dark background — changed to a mid-grey (`#55555c`)
+      that reads as "reputation's black" in both themes.
+      **Richer palette**: warmer ivory/paper background, a second
+      accent colour (warm gold, `--accent-2`) alongside the existing
+      wine red, new `--surface-tint` for alternating section
+      backgrounds (footer, table zebra striping), bigger `--radius`,
+      a `--shadow-lg` for hover states. Values changed, variable
+      names didn't — kept every existing `var(--accent)` etc.
+      reference working rather than a risky mass rename.
+      **Header**: a 4px gradient bar (accent → accent-2) across the
+      very top of every page; a ♪ mark before the site title; nav
+      links get an accent underline on hover/current page instead of
+      just a colour change; login/register became pill-shaped
+      buttons instead of plain text links.
+      **Everywhere else**: every `h1` gets a short gradient accent
+      rule under it (one visual signature repeated site-wide); result
+      cards, plain-list items, playlist cards, and stat cards all
+      gained a coloured left/top border (alternating between the two
+      accents for rhythm) plus a hover lift; buttons got a subtle
+      gradient fill instead of flat colour; tables got zebra
+      striping. Added an intro paragraph under the homepage's "Eras"
+      heading so it doesn't jump straight into the grid with no
+      framing.
+      **One real bug found and fixed along the way**: the new zebra
+      striping (`tbody tr:nth-child(even)`) turned out to have higher
+      CSS specificity than the existing `tr.shared-row` highlight on
+      Compare Albums, so a shared song landing on an even row would
+      silently lose its highlight to the stripe. Fixed by qualifying
+      the selector to `tbody tr.shared-row` to match specificity and
+      win on source order, rather than reaching for `!important`.
+      Verified extensively with headless-Chrome screenshots, light
+      and dark, across home/song/tracklist/stats/tournament/search/
+      moods/compare-albums/favourites/about — not just the homepage,
+      since the shared `style.css` changes touched components used
+      everywhere. Caught and corrected my own mistake mid-session:
+      misread Chrome's `--blink-settings=preferredColorScheme`
+      values backwards (0 is dark, not 2) and nearly reported dark
+      mode as checked when both "before" and "after" screenshots
+      were actually the same light render — caught by testing the
+      flag against a trivial isolated HTML file before trusting it
+      again, not by assuming the first screenshot was correct.
+      Also deleted a leftover `grapevine` theme (0 uses) created
+      during yesterday's profanity-filter testing and never cleaned
+      up — caught while screenshotting the Moods page for this pass,
+      unrelated to today's actual work but fixed while there.
 
 ## Backlog / Ideas
 
