@@ -35,29 +35,43 @@ function recording_display_title(string $songTitle, string $versionType): string
     return $songTitle . ' (' . ucwords(format_version_type($versionType)) . ')';
 }
 
-// A hex accent colour per era, derived from the same official
-// coloured-heart emoji already verified in sql/eras_seed.sql (fan/
-// Taylor-Nation convention, not guessed) — used to give each era
-// card on the homepage its own identity instead of one flat accent
-// everywhere. Falls back to the site's default accent for any era
-// not listed (e.g. if a future era is added before this is updated).
+// Per-era accent colour (derived from the same official coloured-
+// heart emoji already verified in sql/eras_seed.sql — fan/Taylor-
+// Nation convention, not guessed) plus a Google Font chosen to evoke
+// that era's mood. The font choices are deliberately NOT attempts to
+// reproduce any album's actual proprietary lettering/logo (reputation's
+// newspaper stamp, Speak Now's cursive wordmark, etc. are licensed
+// typography this project has no rights to copy) — just a widely
+// available font in the same spirit (e.g. a typewriter face for TTPD,
+// a marker/handwriting face for 1989's Polaroid captions).
+// `google` is the font's Google Fonts family parameter, used to load
+// it on demand only when a visitor actually picks that theme — see
+// backend/era_theme.js — rather than loading all twelve on every
+// page.
+function era_theme_options(): array
+{
+    return [
+        'Taylor Swift' => ['accent' => '#3a9456', 'font' => 'Caveat', 'google' => 'Caveat:wght@600'],
+        'Fearless' => ['accent' => '#c9a227', 'font' => 'Allura', 'google' => 'Allura'],
+        'Speak Now' => ['accent' => '#7c4dbf', 'font' => 'Pinyon Script', 'google' => 'Pinyon+Script'],
+        'Red' => ['accent' => '#b3263f', 'font' => 'Oswald', 'google' => 'Oswald:wght@600'],
+        '1989' => ['accent' => '#3fa9d6', 'font' => 'Permanent Marker', 'google' => 'Permanent+Marker'],
+        'reputation' => ['accent' => '#55555c', 'font' => 'Special Elite', 'google' => 'Special+Elite'],
+        'Lover' => ['accent' => '#e8699e', 'font' => 'Satisfy', 'google' => 'Satisfy'],
+        'folklore' => ['accent' => '#8c8c93', 'font' => 'Crimson Text', 'google' => 'Crimson+Text:ital,wght@1,600'],
+        'evermore' => ['accent' => '#8b5e3c', 'font' => 'Cormorant Garamond', 'google' => 'Cormorant+Garamond:wght@600'],
+        'Midnights' => ['accent' => '#33407a', 'font' => 'Cinzel', 'google' => 'Cinzel:wght@600'],
+        'The Tortured Poets Department' => ['accent' => '#9a958f', 'font' => 'Courier Prime', 'google' => 'Courier+Prime:wght@700'],
+        'The Life of a Showgirl' => ['accent' => '#e2502f', 'font' => 'Abril Fatface', 'google' => 'Abril+Fatface'],
+    ];
+}
+
+// Used by the homepage era cards (just the colour, not the font —
+// those stay in the site's default typeface until a visitor
+// deliberately opts into an era theme via the picker in nav.php).
 function era_accent_color(string $eraName): string
 {
-    return match ($eraName) {
-        'Taylor Swift' => '#3a9456',
-        'Fearless' => '#c9a227',
-        'Speak Now' => '#7c4dbf',
-        'Red' => '#b3263f',
-        '1989' => '#3fa9d6',
-        'reputation' => '#55555c',
-        'Lover' => '#e8699e',
-        'folklore' => '#8c8c93',
-        'evermore' => '#8b5e3c',
-        'Midnights' => '#33407a',
-        'The Tortured Poets Department' => '#9a958f',
-        'The Life of a Showgirl' => '#e2502f',
-        default => '#9c1f3f',
-    };
+    return era_theme_options()[$eraName]['accent'] ?? '#9c1f3f';
 }
 
 // Star toggle button for favouriting a song. Purely client-side —

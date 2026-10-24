@@ -1173,9 +1173,117 @@ now in the database.
       during yesterday's profanity-filter testing and never cleaned
       up — caught while screenshotting the Moods page for this pass,
       unrelated to today's actual work but fixed while there.
+- [x] **Tournament: split "Reject both" into two honest signals.**
+      Found a similar site (tssongsorter.com) and compared it
+      directly — see that research below. One of its ideas adopted:
+      the old single "Reject both — I don't like or know either of
+      these" button conflated two genuinely different signals. Now
+      two buttons in `tournament.js`: **"I don't have an opinion"**
+      (same behaviour as before — both songs permanently out, ranked
+      below even a round-1 Losers Bracket loss) and **"I like them
+      both"** (new — the opposite signal, so neither song should be
+      penalized). The bracket still mechanically needs one winner per
+      match to converge, so one song is picked at random to keep
+      representing the pair, but the other is tracked in a new
+      `state.likedBoth` list and always displayed **tied** with
+      whatever result its partner reaches, not ranked below it — a
+      new "Liked equally — ranked together" section on the results
+      page, and `rankedSongs()` now splices each set-aside song in
+      immediately next to its partner (processing pairs in reverse
+      order so a song that keeps representing a tie across several
+      rounds — a chain — still resolves correctly). Not offered in
+      the Grand Final, same as before (both finalists have already
+      proven themselves once; a tied champion is a different problem
+      this doesn't try to solve).
+      Verified with a real test, not just by reading the code: no
+      browser tool here can run arbitrary interactions against
+      `localhost`, so installed `jsdom` and drove an 8-song bracket
+      through real DOM click events (mixing normal picks, "I like
+      them both", and "I don't have an opinion"), then asserted
+      directly on the persisted `localStorage` state — confirmed the
+      bracket completes, and the set-aside song from a "liked both"
+      pair never ends up double-counted in `eliminated` or
+      `rejectedBoth`. Caught and fixed a bug in the TEST harness
+      itself along the way (jsdom ships its own real `localStorage`
+      that silently shadowed a hand-rolled stub, so the first run's
+      assertions were reading from an orphaned object) — worth
+      recording since it looked exactly like a product bug (state
+      never reaching "done") until traced down.
+- [x] **Era theme picker — colours and a matching font.** Also from
+      the tssongsorter.com comparison. A new `<select>` in the header
+      (`nav.php`) lets a visitor match the whole site's accent colour
+      *and* display font to a chosen era, live, no reload — reusing
+      the per-era colours from yesterday's redesign plus a new font
+      pairing per era in `era_theme_options()`
+      (`backend/helpers.php`). The font choices are deliberately
+      **not** attempts to reproduce any album's actual proprietary
+      lettering (reputation's newspaper stamp, Speak Now's cursive
+      wordmark, etc. are licensed typography this project has no
+      rights to copy) — just a widely-available Google Font in the
+      same spirit (a typewriter face for The Tortured Poets
+      Department, a marker/handwriting face for 1989's Polaroid
+      captions, and so on).
+      New `backend/era_theme.js`: reads `window.TS_ERA_THEMES`
+      (emitted by `nav.php` from the same PHP source of truth),
+      applies the choice by setting `--accent`/`--accent-hover`
+      (via `color-mix()`, so no second hardcoded shade is needed per
+      era) /`--font-display` directly on `:root`, and loads that
+      era's Google Font **on demand** — only when actually selected,
+      not all twelve upfront on every page load. Saved to
+      `localStorage` only (a cosmetic per-browser preference, not
+      account data — no server round-trip needed). The script tag is
+      deliberately *not* deferred and sits right after the header
+      markup in `nav.php`, so a saved theme applies before most of
+      the page renders instead of visibly flashing the default theme
+      first.
+      Verified with a `jsdom` test (selecting an era updates the CSS
+      custom properties and injects the right font `<link>`;
+      reloading with a saved choice re-applies it automatically;
+      resetting to "Default theme" clears the overrides) and then
+      visually, end to end, through real Chrome: used the DevTools
+      Protocol directly (`--remote-debugging-port`, driven over a
+      raw WebSocket from Node, since no higher-level browser tool is
+      available here) to set `localStorage` on the actual running
+      page, reload it, and screenshot the result — confirmed the
+      1989 theme correctly swapped in a light-blue accent and the
+      handwritten marker font.
+      **Comparison research this was based on**: fetched
+      tssongsorter.com (a similar Taylor Swift song-ranking site) and
+      compared its scope against this project's — it includes ~376
+      songs (covers, live versions, holiday songs, and features
+      alongside the 12 albums/EPs) against this project's 254
+      songs/334 recordings, though its own default-excluded count
+      (107) lands close enough to this project's total that the
+      "core discography" scope is actually similar; the gap is
+      mostly the extra categories this project doesn't track at all
+      yet. That — adding the missing song categories — and an audio-
+      preview feature (their site plays a snippet per song; this one
+      doesn't yet) are both still open, see the new backlog items
+      below.
 
 ## Backlog / Ideas
 
+- [ ] **Add the song categories missing from the catalogue**
+      (covers, live versions, holiday songs, soundtrack
+      contributions, features) — found via the tssongsorter.com
+      comparison above. Needs research before any code: verify what
+      actually exists against Wikipedia (this project's established
+      sourcing standard), not just trust another site's list
+      directly. Also a real scope question to settle first: this
+      catalogue has so far meant "Taylor's own studio discography" —
+      does a "feature" (a song that's primarily someone else's, with
+      Taylor guesting) actually belong in a "Taylor Swift Catalogue,"
+      or should that specific category stay out on purpose?
+- [ ] **Audio preview snippets** on the Tournament matchup cards, so
+      a visitor who doesn't remember a song can hear a clip before
+      choosing — tssongsorter.com has this. The iTunes Search API
+      (already used here for album artwork) also returns a 30-second
+      `previewUrl` per track, but today's integration
+      (`backend/artwork.php`) only looks up albums, not individual
+      recordings. Would need a new per-recording lookup+cache
+      (matching title + version, same pattern as artwork caching)
+      and an `<audio>` + play button wired into `tournament.js`'s
+      matchup cards.
 - [ ] Label every "From the Vault" track (not just All Too Well)
       and consider a dedicated page for them, similar to
       `version.php`'s by-version-type browsing. User's own idea,

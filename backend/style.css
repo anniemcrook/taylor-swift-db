@@ -188,6 +188,27 @@ input:focus-visible {
   border-bottom-color: var(--accent);
 }
 
+.era-theme-picker-label {
+  display: flex;
+  align-items: center;
+}
+
+#era-theme-picker {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#era-theme-picker:hover {
+  border-color: var(--accent);
+}
+
 .auth-status {
   display: flex;
   align-items: center;
@@ -789,22 +810,42 @@ ol.plain-list li {
   font-size: 0.9rem;
 }
 
-.tournament-reject-both {
-  display: block;
-  margin: 0.75rem auto 0;
+.tournament-tiebreak-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.75rem 0 0;
+}
+
+.tournament-reject-both,
+.tournament-like-both {
   padding: 0.5rem 1rem;
-  border: 1px dashed var(--border);
   border-radius: var(--radius);
   background: none;
-  color: var(--text-muted);
   font-family: inherit;
   font-size: 0.85rem;
   cursor: pointer;
 }
 
+.tournament-reject-both {
+  border: 1px dashed var(--border);
+  color: var(--text-muted);
+}
+
 .tournament-reject-both:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.tournament-like-both {
+  border: 1px solid var(--accent-2);
+  color: var(--accent-2-hover);
+}
+
+.tournament-like-both:hover {
+  background: var(--accent-2-wash);
+  border-color: var(--accent-2-hover);
 }
 
 .tournament-champion {

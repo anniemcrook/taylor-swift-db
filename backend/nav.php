@@ -12,6 +12,13 @@ $currentNav ??= null;
 // session has to happen before anything is echoed) — nav.php just
 // reads the session state it set up, never starts it itself.
 $loggedInUser = current_user();
+
+// require_once, not require: several pages that include nav.php
+// (e.g. index.php, song.php) already require helpers.php themselves
+// before this point, and a plain require here would fatal with a
+// "cannot redeclare function" error on those pages.
+require_once __DIR__ . '/helpers.php';
+$eraThemeOptions = era_theme_options();
 ?>
 <script>
     // Read by favorites.js/playlists.js/tournament.js to decide
@@ -22,6 +29,8 @@ $loggedInUser = current_user();
     // is always included before scripts.php in every page.
     window.TS_LOGGED_IN = <?= $loggedInUser ? 'true' : 'false' ?>;
     window.TS_CSRF_TOKEN = <?= json_encode(csrf_token()) ?>;
+    // Read by era_theme.js for the "match an era" theme picker.
+    window.TS_ERA_THEMES = <?= json_encode($eraThemeOptions) ?>;
 </script>
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
@@ -41,6 +50,15 @@ $loggedInUser = current_user();
                     <li><a href="playlists.php" <?= $currentNav === 'playlists' ? 'aria-current="page"' : '' ?>>My Playlists</a></li>
                 </ul>
             </nav>
+            <label class="era-theme-picker-label">
+                <span class="visually-hidden">Match the site's theme to an era</span>
+                <select id="era-theme-picker" aria-label="Match the site's theme to an era">
+                    <option value="">Default theme</option>
+                    <?php foreach ($eraThemeOptions as $eraName => $theme): ?>
+                    <option value="<?= htmlspecialchars($eraName) ?>"><?= htmlspecialchars($eraName) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
             <div class="auth-status">
                 <?php if ($loggedInUser): ?>
                 <span>Hi, <?= htmlspecialchars($loggedInUser['display_name']) ?></span>
@@ -53,3 +71,4 @@ $loggedInUser = current_user();
         </div>
     </div>
 </header>
+<script src="era_theme.js"></script>

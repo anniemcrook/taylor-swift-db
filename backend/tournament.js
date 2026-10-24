@@ -15,10 +15,19 @@
 // guarantee that actually matters here (nobody is fully eliminated
 // after just one loss) without that complexity.
 //
-// "Reject both" is available in either bracket (an explicit "I
-// don't like/know either of these" — permanent, no second chance,
-// which is the point) but not in the Grand Final, since both
-// finalists have already proven themselves once.
+// Two escape hatches for a matchup you can't honestly pick a winner
+// in, both available in either bracket but not in the Grand Final
+// (both finalists have already proven themselves once, and a tied
+// champion is a different problem this doesn't try to solve):
+// "I don't have an opinion" is a genuine negative/neutral signal —
+// both songs are permanently out, ranked below even a round-1
+// Losers Bracket loss. "I like them both" is the opposite signal —
+// neither song should be penalized for the other existing, so one
+// is picked at random to keep representing the pair mechanically
+// (a bracket round needs exactly one winner to converge), while the
+// other is carried along and always displayed tied with whichever
+// result the representative reaches. See likeBoth() and the
+// state.likedBoth handling in rankedSongs().
 (function () {
     "use strict";
     var STORAGE_KEY = "ts_tournament";
@@ -117,8 +126,11 @@
     // caller tracks those in `state.rejectedBoth` instead, since
     // they're ranked differently at the end. Recording them in both
     // places would count the same two songs twice in the final
-    // ranking.
-    function resolveMatch(sub, winner) {
+    // ranking. `skipElimination` does the same for a "liked both"
+    // pick — the non-advancing song isn't a loser, it's tied with
+    // the one that mechanically advances, so the caller tracks it in
+    // `state.likedBoth` instead.
+    function resolveMatch(sub, winner, skipElimination) {
         var pair = sub.queue[sub.matchIndex];
         var isReject = !winner;
         var losers = isReject ? pair.slice() : pair.filter(function (s) { return s !== winner; });
@@ -126,7 +138,7 @@
         if (winner) {
             sub.winners.push(winner);
         }
-        if (!isReject) {
+        if (!isReject && !skipElimination) {
             losers.forEach(function (song) {
                 sub.eliminated.push({ song: song, round: sub.round, label: roundLabel(sub.entrantsThisRound) });
             });
@@ -166,6 +178,7 @@
             lb: null,
             lbPool: [],
             rejectedBoth: [], // songs rejected outright, never got a second chance
+            likedBoth: [], // { advanced, setAside } pairs from "I like them both"
             wbChampion: null,
             lbChampion: null,
             champion: null,
@@ -185,6 +198,7 @@
             lb: s.lb,
             lbPool: s.lbPool,
             rejectedBoth: s.rejectedBoth,
+            likedBoth: s.likedBoth,
             wbChampion: s.wbChampion,
             lbChampion: s.lbChampion,
             champion: s.champion,
@@ -209,6 +223,7 @@
             }
             loaded.history = loaded.history || [];
             loaded.syncedToServer = loaded.syncedToServer || false;
+            loaded.likedBoth = loaded.likedBoth || [];
             return loaded;
         } catch (e) {
             return null;
@@ -306,7 +321,7 @@
         }
     }
 
-    function rejectBoth(a, b) {
+    function noOpinion(a, b) {
         state.history.push(snapshotState(state));
         var sub = currentSub();
         var losers = resolveMatch(sub, null);
@@ -317,7 +332,34 @@
         if (state.phase === "done") {
             announceOutcome();
         } else {
-            announce("Rejected both " + a.title + " and " + b.title + ". Next matchup loaded.");
+            announce("No opinion on " + a.title + " or " + b.title + ". Next matchup loaded.");
+        }
+    }
+
+    // One of the pair is picked at random to keep representing the
+    // match mechanically (the bracket needs exactly one winner per
+    // match), but neither is penalized — the one set aside is always
+    // shown tied with whatever the representative goes on to achieve,
+    // not ranked below it. See the state.likedBoth handling in
+    // rankedSongs(). Not offered in the Grand Final, same as
+    // noOpinion() — see renderMatchup()'s allowTiebreakers gating.
+    function likeBoth(a, b) {
+        state.history.push(snapshotState(state));
+        var advanced = Math.random() < 0.5 ? a : b;
+        var setAside = advanced === a ? b : a;
+        state.wins[advanced.recording_id] = (state.wins[advanced.recording_id] || 0) + 1;
+
+        var sub = currentSub();
+        resolveMatch(sub, advanced, true);
+        state.likedBoth.push({ advanced: advanced, setAside: setAside });
+        afterSubBracketMaybeFinished();
+
+        writeState(state);
+        render();
+        if (state.phase === "done") {
+            announceOutcome();
+        } else {
+            announce("Liked both " + a.title + " and " + b.title + " — they'll be ranked together. Next matchup loaded.");
         }
     }
 
@@ -436,7 +478,7 @@
         renderMatchup(sub.queue[sub.matchIndex], true);
     }
 
-    function renderMatchup(pair, allowRejectBoth) {
+    function renderMatchup(pair, allowTiebreakers) {
         var matchup = document.createElement("div");
         matchup.className = "tournament-matchup";
 
@@ -451,15 +493,29 @@
         matchup.appendChild(buttonB);
         root.appendChild(matchup);
 
-        if (allowRejectBoth) {
-            var rejectBtn = document.createElement("button");
-            rejectBtn.type = "button";
-            rejectBtn.className = "tournament-reject-both";
-            rejectBtn.textContent = "Reject both — I don't like or know either of these";
-            rejectBtn.addEventListener("click", function () {
-                rejectBoth(pair[0], pair[1]);
+        if (allowTiebreakers) {
+            var tiebreakActions = document.createElement("div");
+            tiebreakActions.className = "tournament-tiebreak-actions";
+
+            var noOpinionBtn = document.createElement("button");
+            noOpinionBtn.type = "button";
+            noOpinionBtn.className = "tournament-reject-both";
+            noOpinionBtn.textContent = "I don't have an opinion";
+            noOpinionBtn.addEventListener("click", function () {
+                noOpinion(pair[0], pair[1]);
             });
-            root.appendChild(rejectBtn);
+            tiebreakActions.appendChild(noOpinionBtn);
+
+            var likeBothBtn = document.createElement("button");
+            likeBothBtn.type = "button";
+            likeBothBtn.className = "tournament-like-both";
+            likeBothBtn.textContent = "I like them both";
+            likeBothBtn.addEventListener("click", function () {
+                likeBoth(pair[0], pair[1]);
+            });
+            tiebreakActions.appendChild(likeBothBtn);
+
+            root.appendChild(tiebreakActions);
         }
 
         var actions = document.createElement("div");
@@ -548,6 +604,30 @@
         });
 
         ranked = ranked.concat(state.rejectedBoth);
+
+        // Insert each "liked both" pair's set-aside song immediately
+        // next to whichever result its advanced partner reached, so
+        // they end up genuinely tied instead of the set-aside song
+        // ranking below it or vanishing. Processed in reverse
+        // (most-recent pair first) so a chain — the same song kept
+        // representing a tie across several rounds — resolves
+        // correctly: each pair's partner needs to already be placed
+        // before an earlier pair that ties to *that* partner can find it.
+        state.likedBoth.slice().reverse().forEach(function (pair) {
+            var idx = ranked.findIndex(function (song) {
+                return song.recording_id === pair.advanced.recording_id;
+            });
+            if (idx !== -1) {
+                ranked.splice(idx + 1, 0, pair.setAside);
+            } else {
+                // Shouldn't normally happen — the advanced song should
+                // always resolve to a real result — but don't let the
+                // set-aside song silently disappear from the ranking
+                // if it somehow does.
+                ranked.push(pair.setAside);
+            }
+        });
+
         return ranked;
     }
 
@@ -735,6 +815,28 @@
             root.appendChild(p);
             root.appendChild(renderSongList(songs));
         });
+
+        if (state.likedBoth.length > 0) {
+            var tiedHeading = document.createElement("p");
+            tiedHeading.innerHTML = "<strong>Liked equally — ranked together:</strong>";
+            root.appendChild(tiedHeading);
+            var tiedList = document.createElement("ul");
+            tiedList.className = "plain-list tournament-tied-songs";
+            state.likedBoth.forEach(function (pair) {
+                var li = document.createElement("li");
+                var linkA = document.createElement("a");
+                linkA.href = "song.php?song_id=" + encodeURIComponent(pair.advanced.song_id);
+                linkA.textContent = pair.advanced.title;
+                var linkB = document.createElement("a");
+                linkB.href = "song.php?song_id=" + encodeURIComponent(pair.setAside.song_id);
+                linkB.textContent = pair.setAside.title;
+                li.appendChild(linkA);
+                li.appendChild(document.createTextNode(" ↔ "));
+                li.appendChild(linkB);
+                tiedList.appendChild(li);
+            });
+            root.appendChild(tiedList);
+        }
 
         if (state.rejectedBoth.length > 0) {
             var rejectedHeading = document.createElement("p");
